@@ -1,0 +1,8 @@
+<?php
+return (object)[
+    'rootNamespace' => 'vakata\authentication',
+    'destDirectory' => 'docs',
+    'format' => 'github',
+    'classes' => [
+    ],
+];
