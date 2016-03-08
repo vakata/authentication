@@ -22,12 +22,16 @@
         }
     ],
     "require": {
-        "php" : ">=5.4.0"
+        "php" : ">=5.4.0",
+        "vakata/jwt" : "1.*"
     },
     "require-dev": {
         "phpunit/phpunit" : "4.*",
         "codeclimate/php-test-reporter": "dev-master",
         "clean/phpdoc-md": "dev-master"
+    },
+    "suggest": {
+        "vakata/database" : "Install if you plan on using PasswordDatabase or PasswordDatabaseAdvanced"
     },
     "autoload": {
         "psr-4": {
