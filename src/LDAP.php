@@ -3,7 +3,7 @@ namespace vakata\authentication;
 
 use vakata\jwt\JWT;
 
-class Ldap implements AuthenticationInterface
+class LDAP implements AuthenticationInterface
 {
     protected $domain = null;
     protected $user = null;
