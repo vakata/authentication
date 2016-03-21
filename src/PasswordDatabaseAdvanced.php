@@ -4,11 +4,35 @@ namespace vakata\authentication;
 use vakata\jwt\JWT;
 use vakata\database\DatabaseInterface as DBI;
 
+/**
+ * A class for advanced password authentication - user/pass combinations are looked up in a database.
+ */
 class PasswordDatabaseAdvanced extends PasswordDatabase
 {
     protected $logTable;
     protected $rules;
 
+    /**
+     * Create an instance.
+     * 
+     * Requires a users table with `username` and `pasword` columns.
+     * Requires a log table with `username`, `created`, `action`, `data`, `ip` and `ua` columns.
+     * The rules array may contain:
+     * * `minLength` - the minimum password length - defaults to `3`
+     * * `minStrength` - the minimum password strength - defaults to `2` (max is `5`)
+     * * `changeEvery` - should a password change be enforced (a strtotime expression) - defaults to `30 days`
+     * * `errorTimeout` - timeout in seconds between login attempts after errorTimeoutThreshold - defaults to `3`
+     * * `errorTimeoutThreshold` - the number of wrong attempts before enforcing a timeout - defaults to `3`
+     * * `errorLongTimeout` - a second timeout between login attempts after another threshold - defaults to `10`
+     * * `errorLongTimeoutThreshold` - the number of wrong attempts before enforcing a long timeout - defaults to `10`
+     * * `ipChecks` - should the above timeouts be enforced on IP level too - defaults to `true`
+     * * `uniquePasswordCount` - do not allow reusing the last X passwords - defaults to `3`
+     * @method __construct
+     * @param  DatabaseInterface $db    a database object
+     * @param  string            $table the table to use (defaults to `user_password`)
+     * @param  string            $logTable the log table to use (defaults to `user_password_log`)
+     * @param  array             $rules optional rules for the class that will override the defaults
+     */
     public function __construct(DBI $db, $table = 'user_password', $logTable = 'user_password_log', array $rules = [])
     {
         parent::__construct($db, $table);
@@ -69,7 +93,12 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             throw new AuthenticationException('Too many attempts, please wait');
         }
     }
-
+    /**
+     * Change a user's password
+     * @method changePassword
+     * @param  string         $username the username whose password is being changed
+     * @param  string         $password the new password
+     */
     public function changePassword($username, $password)
     {
         if ($this->rules['minLength'] && strlen($password) < $this->rules['minLength']) {
@@ -91,6 +120,15 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
         }
         parent::changePassword($username, $password);
     }
+    /**
+     * Authenticate using the supplied creadentials. 
+     * 
+     * Returns a JWT token or throws an AuthenticationException or a PasswordChangeException.
+     * The data may contain `password1` and `password2` fields for password changing.
+     * @method authenticate
+     * @param  array        $data the auth input (should contain `username` and `password` keys)
+     * @return \vakata\jwt\JWT    a JWT token indicating successful authentication
+     */
     public function authenticate(array $data = [])
     {
         if (!isset($data['username']) || !isset($data['password'])) {

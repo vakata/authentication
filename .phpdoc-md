@@ -4,5 +4,14 @@ return (object)[
     'destDirectory' => 'docs',
     'format' => 'github',
     'classes' => [
+        'vakata\authentication\AuthenticationInterface',
+        'vakata\authentication\Password',
+        'vakata\authentication\PasswordDatabase',
+        'vakata\authentication\PasswordDatabaseAdvanced',
+        'vakata\authentication\LDAP',
+        'vakata\authentication\Callback',
+        'vakata\authentication\Certificate',
+        'vakata\authentication\TOTP',
+        'vakata\authentication\oauth\OAuth'
     ],
 ];

@@ -3,12 +3,22 @@ namespace vakata\authentication;
 
 use vakata\jwt\JWT;
 
+/**
+ * Authentication based on LDAP.
+ */
 class LDAP implements AuthenticationInterface
 {
     protected $domain = null;
     protected $user = null;
     protected $pass = null;
 
+    /**
+     * Create an instance.
+     * @method __construct
+     * @param  string      $domain the domain to check against
+     * @param  string      $user   optional username to use for searches
+     * @param  string      $pass   optional password to use for searches
+     */
     public function __construct($domain, $user = null, $pass = null)
     {
         $this->domain = $domain;
@@ -36,10 +46,22 @@ class LDAP implements AuthenticationInterface
         return $temp;
     }
 
+    /**
+     * Does the auth class support this input
+     * @method supports
+     * @param  array    $data the auth input
+     * @return boolean        is this input supported by the class
+     */
     public function supports(array $data = [])
     {
         return (isset($data['username']) && isset($data['password']));
     }
+    /**
+     * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.
+     * @method authenticate
+     * @param  array        $data the auth input (should contain `username` and `password` keys)
+     * @return \vakata\jwt\JWT    a JWT token indicating successful authentication
+     */
     public function authenticate(array $data = [])
     {
         if (!isset($data['username']) || !isset($data['password'])) {
