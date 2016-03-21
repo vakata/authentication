@@ -19,7 +19,16 @@ $ composer require vakata/authentication
 ## Usage
 
 ``` php
-
+$auth = new \vakata\authentication\PasswordDatabase($db);
+try {
+    $token = $auth->authenticate([
+        'username' => $req->getPost('username'),
+        'password' => $req->getPost('password')
+    ]);
+} catch (AuthenticationException $e) {
+    // process exception
+}
+// work with $token
 ```
 
 Read more in the [API docs](docs/README.md)
