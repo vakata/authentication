@@ -42,6 +42,9 @@ class PasswordDatabase implements AuthenticationInterface
         if (!$pass) {
             throw new AuthenticationException('Invalid username');
         }
+        if (strlen($pass) < 32 && $pass === $data['password']) {
+            $this->changePassword($data['username'], $data['password']);
+        }
         if (!password_verify($data['password'], $pass)) {
             throw new AuthenticationException('Invalid password');
         }

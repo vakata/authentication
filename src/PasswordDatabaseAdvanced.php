@@ -144,7 +144,7 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             throw new AuthenticationException('Invalid username');
         }
 
-        if ($data['password'] === $pass) {
+        if (strlen($pass) < 32 && $data['password'] === $pass) {
             if (!isset($data['password1']) || !isset($data['password2'])) {
                 throw new PasswordChangeException('Please, change your password');
             }
