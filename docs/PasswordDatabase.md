@@ -28,7 +28,7 @@ public function __construct (
 |  | Type | Description |
 |-----|-----|-----|
 | `$db` | `\DatabaseInterface` | a database object |
-| `$table` | `string` | the table to use (defaults to `user_password`) |
+| `$table` | `string` | the table to use (defaults to `users_password`) |
 
 ---
 

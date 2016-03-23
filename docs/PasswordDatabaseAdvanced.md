@@ -41,8 +41,8 @@ public function __construct (
 |  | Type | Description |
 |-----|-----|-----|
 | `$db` | `\DatabaseInterface` | a database object |
-| `$table` | `string` | the table to use (defaults to `user_password`) |
-| `$logTable` | `string` | the log table to use (defaults to `user_password_log`) |
+| `$table` | `string` | the table to use (defaults to `users_password`) |
+| `$logTable` | `string` | the log table to use (defaults to `users_password_log`) |
 | `$rules` | `array` | optional rules for the class that will override the defaults |
 
 ---

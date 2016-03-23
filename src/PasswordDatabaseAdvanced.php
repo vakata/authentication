@@ -29,11 +29,11 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * * `uniquePasswordCount` - do not allow reusing the last X passwords - defaults to `3`
      * @method __construct
      * @param  DatabaseInterface $db    a database object
-     * @param  string            $table the table to use (defaults to `user_password`)
-     * @param  string            $logTable the log table to use (defaults to `user_password_log`)
+     * @param  string            $table the table to use (defaults to `users_password`)
+     * @param  string            $logTable the log table to use (defaults to `users_password_log`)
      * @param  array             $rules optional rules for the class that will override the defaults
      */
-    public function __construct(DBI $db, $table = 'user_password', $logTable = 'user_password_log', array $rules = [])
+    public function __construct(DBI $db, $table = 'users_password', $logTable = 'users_password_log', array $rules = [])
     {
         parent::__construct($db, $table);
         $this->logTable = $logTable;

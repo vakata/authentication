@@ -16,9 +16,9 @@ class PasswordDatabase implements AuthenticationInterface
      * Create an instance. Requires a table with `username` and `pasword` columns
      * @method __construct
      * @param  DatabaseInterface $db    a database object
-     * @param  string            $table the table to use (defaults to `user_password`)
+     * @param  string            $table the table to use (defaults to `users_password`)
      */
-    public function __construct(DatabaseInterface $db, $table = 'user_password')
+    public function __construct(DatabaseInterface $db, $table = 'users_password')
     {
         $this->db = $db;
         $this->table = $table;
