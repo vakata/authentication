@@ -16,7 +16,7 @@ A class for advanced password authentication - user/pass combinations are looked
 
 ### vakata\authentication\PasswordDatabaseAdvanced::__construct
 Create an instance.  
-Requires a users table with `username` and `pasword` columns.  
+Requires a users table with `username` and `password` columns.  
 Requires a log table with `username`, `created`, `action`, `data`, `ip` and `ua` columns.  
 The rules array may contain:  
 * `minLength` - the minimum password length - defaults to `3`  
