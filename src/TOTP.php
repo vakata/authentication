@@ -150,7 +150,7 @@ class TOTP implements AuthenticationInterface
     public function authenticate(array $data = [])
     {
         if (!isset($data['totp'])) {
-            throw new AuthenticationException('Missing credentials');
+            throw new TOTPException('Missing TOTP credentials');
         }
         $isValid = false;
         $data['totp'] = str_replace(' ', '', $data['totp']);
@@ -163,7 +163,7 @@ class TOTP implements AuthenticationInterface
             }
         }
         if (!$isValid) {
-            throw new AuthenticationException('Invalid credentials');
+            throw new TOTPException('Invalid TOTP credentials');
         }
         return new JWT([
             'provider' => 'totp',
