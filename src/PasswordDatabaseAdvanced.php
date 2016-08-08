@@ -16,7 +16,7 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * Create an instance.
      * 
      * Requires a users table with `username` and `password` columns.
-     * Requires a log table with `username`, `created`, `action`, `data`, `ip` and `ua` columns.
+     * Requires a log table with `username`, `created`, `action`, `data` and `ip` columns.
      * The rules array may contain:
      * * `minLength` - the minimum password length - defaults to `3`
      * * `minStrength` - the minimum password strength - defaults to `2` (max is `5`)
@@ -119,6 +119,16 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             }
         }
         parent::changePassword($username, $password);
+        $this->db->query(
+            "INSERT INTO {$this->logTable} (username, created, action, data, ip) VALUES (?, ?, ?, ?, ?)",
+            [
+                $username,
+                date('Y-m-d H:i:s'),
+                'change',
+                password_hash($password, PASSWORD_DEFAULT),
+                isset($data['ip']) ? $data['ip'] : ''
+            ]
+        );
     }
     /**
      * Authenticate using the supplied creadentials. 
@@ -169,14 +179,13 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
         $pass = $this->getPasswordByUsername($data['username']);
         if (!$pass) {
             $this->db->query(
-                "INSERT INTO {$this->logTable} (username, created, action, data, ip, ua) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO {$this->logTable} (username, created, action, data, ip) VALUES (?, ?, ?, ?, ?)",
                 [
                     $data['username'],
                     date('Y-m-d H:i:s'),
                     'error',
                     'Invalid username',
-                    isset($data['ip']) ? $data['ip'] : '',
-                    isset($data['ua']) ? $data['ua'] : ''
+                    isset($data['ip']) ? $data['ip'] : ''
                 ]
             );
             throw new AuthenticationException('Invalid username');
@@ -191,27 +200,25 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             }
             $this->changePassword($data['username'], $data['password1']);
             $this->db->query(
-                "INSERT INTO {$this->logTable} (username, created, action, data, ip, ua) VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO {$this->logTable} (username, created, action, data, ip) VALUES (?, ?, ?, ?, ?)",
                 [
                     $data['username'],
                     date('Y-m-d H:i:s'),
                     'change',
                     password_hash($data['password1'], PASSWORD_DEFAULT),
-                    isset($data['ip']) ? $data['ip'] : '',
-                    isset($data['ua']) ? $data['ua'] : ''
+                    isset($data['ip']) ? $data['ip'] : ''
                 ]
             );
         } else {
             if (!password_verify($data['password'], $pass)) {
                 $this->db->query(
-                    "INSERT INTO {$this->logTable} (username, created, action, data, ip, ua) VALUES (?, ?, ?, ?, ?, ?)",
+                    "INSERT INTO {$this->logTable} (username, created, action, data, ip) VALUES (?, ?, ?, ?, ?)",
                     [
                         $data['username'],
                         date('Y-m-d H:i:s'),
                         'error',
                         'Invalid password',
-                        isset($data['ip']) ? $data['ip'] : '',
-                        isset($data['ua']) ? $data['ua'] : ''
+                        isset($data['ip']) ? $data['ip'] : ''
                     ]
                 );
                 throw new AuthenticationException('Invalid password');
@@ -232,17 +239,6 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
                         throw new PasswordChangeException('Passwords do not match');
                     }
                     $this->changePassword($data['username'], $data['password1']);
-                    $this->db->query(
-                        "INSERT INTO {$this->logTable} (username, created, action, data, ip, ua) VALUES (?, ?, ?, ?, ?, ?)",
-                        [
-                            $data['username'],
-                            date('Y-m-d H:i:s'),
-                            'change',
-                            password_hash($data['password1'], PASSWORD_DEFAULT),
-                            isset($data['ip']) ? $data['ip'] : '',
-                            isset($data['ua']) ? $data['ua'] : ''
-                        ]
-                    );
                 }
             }
             if (password_needs_rehash($pass, PASSWORD_DEFAULT)) {
@@ -250,14 +246,13 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             }
         }
         $this->db->query(
-            "INSERT INTO {$this->logTable} (username, created, action, data, ip, ua) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO {$this->logTable} (username, created, action, data, ip) VALUES (?, ?, ?, ?, ?)",
             [
                 $data['username'],
                 date('Y-m-d H:i:s'),
                 'login',
                 '',
-                isset($data['ip']) ? $data['ip'] : '',
-                isset($data['ua']) ? $data['ua'] : ''
+                isset($data['ip']) ? $data['ip'] : ''
             ]
         );
         return new JWT([
