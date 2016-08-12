@@ -1,8 +1,6 @@
 <?php
 namespace vakata\authentication;
 
-use vakata\authentication\token\JWT;
-
 interface AuthenticationInterface
 {
     /**
@@ -11,12 +9,12 @@ interface AuthenticationInterface
      * @param  array    $data the auth input
      * @return boolean        is this input supported by the class
      */
-    public function supports(array $data = []);
+    public function supports(array $data = []) : bool;
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.
      * @method authenticate
      * @param  array        $data the auth input
-     * @return \vakata\jwt\JWT    a JWT token indicating successful authentication
+     * @return \vakata\authentication\Credentials
      */
-    public function authenticate(array $data = []);
+    public function authenticate(array $data = []) : Credentials;
 }

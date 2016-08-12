@@ -38,14 +38,14 @@ Authenticate using the supplied creadentials. Returns a JWT token or throws an A
 ```php
 public function authenticate (  
     array $data  
-) : \vakata\jwt\JWT    
+) : \vakata\authentication\Credentials    
 ```
 
 |  | Type | Description |
 |-----|-----|-----|
 | `$data` | `array` | the auth input |
 |  |  |  |
-| `return` | `\vakata\jwt\JWT` | a JWT token indicating successful authentication |
+| `return` | `\vakata\authentication\Credentials` |  |
 
 ---
 

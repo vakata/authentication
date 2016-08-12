@@ -1,20 +1,19 @@
-# vakata\authentication\oauth\OAuth
-OAuth2 authentication.
+# vakata\authentication\oauth\Github
 
-This class is abstract - use any of the extending classes like Facebook, Google, Microsoft, Linkedin, Github.
+
 ## Methods
 
 | Name | Description |
 |------|-------------|
-|[__construct](#vakata\authentication\oauth\oauth__construct)|Create an instance.|
-|[supports](#vakata\authentication\oauth\oauthsupports)|Does the auth class support this input.|
-|[authenticate](#vakata\authentication\oauth\oauthauthenticate)|Authenticate using the supplied credentials. Returns a JWT token or throws an AuthenticationException.|
+|[__construct](#vakata\authentication\oauth\github__construct)|Create an instance.|
+|[supports](#vakata\authentication\oauth\githubsupports)|Does the auth class support this input.|
+|[authenticate](#vakata\authentication\oauth\githubauthenticate)|Authenticate using the supplied credentials. Returns a JWT token or throws an AuthenticationException.|
 
 ---
 
 
 
-### vakata\authentication\oauth\OAuth::__construct
+### vakata\authentication\oauth\Github::__construct
 Create an instance.  
 
 
@@ -37,7 +36,7 @@ public function __construct (
 ---
 
 
-### vakata\authentication\oauth\OAuth::supports
+### vakata\authentication\oauth\Github::supports
 Does the auth class support this input.  
 Calling `authenticate` if `support` returns `false` will redirect the user to the provider's login screen.
 
@@ -56,7 +55,7 @@ public function supports (
 ---
 
 
-### vakata\authentication\oauth\OAuth::authenticate
+### vakata\authentication\oauth\Github::authenticate
 Authenticate using the supplied credentials. Returns a JWT token or throws an AuthenticationException.  
 
 
