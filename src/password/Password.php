@@ -15,7 +15,6 @@ class Password implements AuthenticationInterface
 
     /**
      * Create an instance.
-     * @method __construct
      * @param  array       $passwords user => pass combinations, passwords may be hashed or plain text
      */
     public function __construct(array $passwords = [])
@@ -28,7 +27,6 @@ class Password implements AuthenticationInterface
     }
     /**
      * Does the auth class support this input
-     * @method supports
      * @param  array    $data the auth input
      * @return boolean        is this input supported by the class
      */
@@ -38,7 +36,6 @@ class Password implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied credentials.
-     * @method authenticate
      * @param  array        $data the auth input (should contain `username` and `password` keys)
      * @return \vakata\authentication\Credentials        an array of data
      */

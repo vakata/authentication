@@ -29,7 +29,6 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * * `errorLongTimeoutThreshold` - the number of wrong attempts before enforcing a long timeout - defaults to `10`
      * * `ipChecks` - should the above timeouts be enforced on IP level too - defaults to `true`
      * * `uniquePasswordCount` - do not allow reusing the last X passwords - defaults to `3`
-     * @method __construct
      * @param  DatabaseInterface $db    a database object
      * @param  string            $table the table to use (defaults to `users_password`)
      * @param  string            $logTable the log table to use (defaults to `users_password_log`)
@@ -97,7 +96,6 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
     }
     /**
      * Change a user's password
-     * @method changePassword
      * @param  string         $username the username whose password is being changed
      * @param  string         $password the new password
      */
@@ -137,7 +135,6 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * 
      * Returns a JWT token or throws an AuthenticationException or a PasswordChangeException.
      * The data may contain `password1` and `password2` fields for password changing.
-     * @method authenticate
      * @param  array        $data the auth input (should contain `username` and `password` keys)
      * @return \vakata\authentication\Credentials
      */

@@ -12,7 +12,6 @@ class Certificate implements AuthenticationInterface
 {
     /**
      * Does the auth class support this input
-     * @method supports
      * @param  array    $data the auth input
      * @return boolean        is a client certificate is supplied
      */
@@ -22,7 +21,6 @@ class Certificate implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied certificate. Returns a JWT token or throws an AuthenticationException.
-     * @method authenticate
      * @param  array        $data not used in this class
      * @return \vakata\jwt\JWT    a JWT token indicating successful authentication
      */

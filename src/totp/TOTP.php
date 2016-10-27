@@ -22,7 +22,6 @@ class TOTP implements AuthenticationInterface
      * * code_timeout - the code timeout time in seconds, defaults to `60`
      * * code_length - the length of the code, defaults to `6` digits
      * * slice_length - the time slice length in seconds, defaults to `30`
-     * @method __construct
      * @param  string      $secret  the secret key
      * @param  array       $options configuration
      */
@@ -106,7 +105,6 @@ class TOTP implements AuthenticationInterface
     }
     /**
      * Get the secret code.
-     * @method getSecret
      * @return string    the encoded secret code
      */
     public function getSecret()
@@ -115,7 +113,6 @@ class TOTP implements AuthenticationInterface
     }
     /**
      * get the secret URI (used in code generator apps)
-     * @method getSecretUri
      * @return string       the URI containing the title and secret
      */
     public function getSecretUri()
@@ -124,7 +121,6 @@ class TOTP implements AuthenticationInterface
     }
     /**
      * Get a QR code for the URI (uses Google's chart API)
-     * @method getQRCode
      * @param  integer   $size the size of the QR code in pixels
      * @return string          the QR code data URL (base64 encoded, ready to be used in a "src" attribute)
      */
@@ -136,7 +132,6 @@ class TOTP implements AuthenticationInterface
     }
     /**
      * Does the auth class support this input
-     * @method supports
      * @param  array    $data the auth input
      * @return boolean        is this input supported by the class
      */
@@ -146,7 +141,6 @@ class TOTP implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.
-     * @method authenticate
      * @param  array        $data the auth input (should contain a `totp` key)
      * @return \vakata\authentication\Credentials
      */

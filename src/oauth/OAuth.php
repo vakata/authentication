@@ -22,7 +22,6 @@ abstract class OAuth implements AuthenticationInterface
 
     /**
      * Create an instance.
-     * @method __construct
      * @param  string      $publicKey   the public key
      * @param  string      $privateKey  the secret key
      * @param  string      $callbackUrl the callback URL
@@ -58,7 +57,6 @@ abstract class OAuth implements AuthenticationInterface
      * Does the auth class support this input.
      * 
      * Calling `authenticate` if `support` returns `false` will redirect the user to the provider's login screen.
-     * @method supports
      * @param  array    $data the auth input (empty in all OAuth classes)
      * @return boolean        is the current URL the same as the callbackUrl
      */
@@ -69,7 +67,6 @@ abstract class OAuth implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied credentials. Returns a JWT token or throws an AuthenticationException.
-     * @method authenticate
      * @param  array        $data the auth input (ignored in all OAuth classes)
      * @return \vakata\authentication\Credentials
      */

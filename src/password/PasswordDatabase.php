@@ -16,7 +16,6 @@ class PasswordDatabase implements AuthenticationInterface
 
     /**
      * Create an instance. Requires a table with `username` and `pasword` columns
-     * @method __construct
      * @param  DatabaseInterface $db    a database object
      * @param  string            $table the table to use (defaults to `users_password`)
      */
@@ -32,7 +31,6 @@ class PasswordDatabase implements AuthenticationInterface
     }
     /**
      * Change a user's password
-     * @method changePassword
      * @param  string         $username the username whose password is being changed
      * @param  string         $password the new password
      */
@@ -47,7 +45,6 @@ class PasswordDatabase implements AuthenticationInterface
     }
     /**
      * Does the auth class support this input
-     * @method supports
      * @param  array    $data the auth input
      * @return boolean        is this input supported by the class
      */
@@ -57,7 +54,6 @@ class PasswordDatabase implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied creadentials.
-     * @method authenticate
      * @param  array        $data the auth input (should contain `username` and `password` keys)
      * @return \vakata\authentication\Credentials    
      */

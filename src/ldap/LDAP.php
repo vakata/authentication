@@ -17,7 +17,6 @@ class LDAP implements AuthenticationInterface
 
     /**
      * Create an instance.
-     * @method __construct
      * @param  string      $domain the domain to check against
      * @param  string      $user   optional username to use for searches
      * @param  string      $pass   optional password to use for searches
@@ -51,7 +50,6 @@ class LDAP implements AuthenticationInterface
 
     /**
      * Does the auth class support this input
-     * @method supports
      * @param  array    $data the auth input
      * @return boolean        is this input supported by the class
      */
@@ -61,7 +59,6 @@ class LDAP implements AuthenticationInterface
     }
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.
-     * @method authenticate
      * @param  array        $data the auth input (should contain `username` and `password` keys)
      * @return \vakata\authentication\Credentials
      */
