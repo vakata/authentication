@@ -36,7 +36,7 @@ class Certificate implements AuthenticationInterface
             throw new CertificateExceptionInvalid();
         }
         return new Credentials(
-            static::CLASS,
+            static::class,
             $_SERVER['SSL_CLIENT_M_SERIAL'],
             [
                 'name' => $_SERVER['SSL_CLIENT_S_DN_CN'] ?? null,

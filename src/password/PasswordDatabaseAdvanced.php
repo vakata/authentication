@@ -3,6 +3,7 @@ namespace vakata\authentication\password;
 
 use vakata\database\DatabaseInterface as DBI;
 use vakata\authentication\AuthenticationInterface;
+use vakata\authentication\AuthenticationException;
 use vakata\authentication\AuthenticationExceptionNotSupported;
 use vakata\authentication\Credentials;
 
@@ -233,7 +234,7 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             ]
         );
         return new Credentials(
-            static::CLASS,
+            static::class,
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

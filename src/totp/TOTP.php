@@ -49,7 +49,7 @@ class TOTP implements AuthenticationInterface
             ((ord($hash[$offs+2]) & 0xff) << 8  ) |
              (ord($hash[$offs+3]) & 0xff)
         ) % pow(10, $this->options['code_length']);
-        return str_pad($hash, $this->options['code_length'], '0', STR_PAD_LEFT);
+        return str_pad((string)$hash, $this->options['code_length'], '0', STR_PAD_LEFT);
     }
     protected static function base32_decode($b32) {
         $lut = [
@@ -163,7 +163,7 @@ class TOTP implements AuthenticationInterface
             throw new TOTPException();
         }
         return new Credentials(
-            static::CLASS,
+            static::class,
             $this->getSecret()
         );
     }

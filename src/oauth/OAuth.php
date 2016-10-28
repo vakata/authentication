@@ -18,6 +18,7 @@ abstract class OAuth implements AuthenticationInterface
     protected $authorizeUrl;
     protected $tokenUrl;
     protected $infoUrl;
+    protected $permissions = '';
     protected $grantType = 'authorization_code';
 
     /**
@@ -101,7 +102,9 @@ abstract class OAuth implements AuthenticationInterface
                 $authToken = json_decode($authToken, true);
             }
             else {
-                parse_str($authToken, $authToken);
+                $temp = [];
+                parse_str($authToken, $temp);
+                $authToken = $temp;
             }
             if (!$authToken || !is_array($authToken) || !isset($authToken['access_token'])) {
                 throw new OAuthExceptionToken();
@@ -112,7 +115,7 @@ abstract class OAuth implements AuthenticationInterface
                 throw new OAuthExceptionData();
             }
             return new Credentials(
-                static::CLASS,
+                static::class,
                 $user['id'],
                 [
                     'name' => $user['name'] ?? null,
