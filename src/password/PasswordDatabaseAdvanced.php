@@ -109,11 +109,14 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             throw new PasswordExceptionEasyPassword();
         }
         if ($this->rules['uniquePasswordCount']) {
-            $passes = $this->db->all(
-                "SELECT data FROM {$this->logTable} WHERE username = ? AND action = ? ORDER BY created DESC LIMIT ?",
-                [ $username, 'change', $this->rules['uniquePasswordCount'] ]
+            $passes = $this->db->get(
+                "SELECT data FROM {$this->logTable} WHERE username = ? AND action = ? ORDER BY created DESC", // LIMIT ?",
+                [ $username, 'change' ] // $this->rules['uniquePasswordCount'] ]
             );
-            foreach ($passes as $pass) {
+            foreach ($passes as $k => $pass) {
+                if ($k >= $this->rules['uniquePasswordCount']) {
+                    break;
+                }
                 if (password_verify($password, $pass)) {
                     throw new PasswordExceptionRepeatPassword('Password matches a recent one');
                 }
