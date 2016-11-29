@@ -98,7 +98,7 @@ class LDAP implements AuthenticationInterface
         ldap_unbind($ldap);
 
         return new Credentials(
-            static::class,
+            substr(strrchr(get_class($this), '\\'), 1),
             $temp['userPrincipalName'] ?? $temp['sAMAccountName'] ?? $user,
             $temp
         );

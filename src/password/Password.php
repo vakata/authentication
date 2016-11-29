@@ -55,7 +55,7 @@ class Password implements AuthenticationInterface
             throw new PasswordExceptionInvalidPassword();
         }
         return new Credentials(
-            static::class,
+            substr(strrchr(get_class($this), '\\'), 1),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

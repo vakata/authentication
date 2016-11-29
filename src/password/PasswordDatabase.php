@@ -76,7 +76,7 @@ class PasswordDatabase implements AuthenticationInterface
             $this->changePassword($data['username'], $data['password']);
         }
         return new Credentials(
-            static::class,
+            substr(strrchr(get_class($this), '\\'), 1),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

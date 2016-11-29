@@ -31,7 +31,7 @@ abstract class OAuth implements AuthenticationInterface
     public function __construct($publicKey, $privateKey, $callbackUrl, $permissions = '')
     {
         if (!$this->provider) {
-            $this->provider = get_class($this);
+            $this->provider = substr(strrchr(get_class($this), '\\'), 1);
         }
         $this->publicKey = $publicKey;
         $this->privateKey = $privateKey;
@@ -115,7 +115,7 @@ abstract class OAuth implements AuthenticationInterface
                 throw new OAuthExceptionData();
             }
             return new Credentials(
-                static::class,
+                substr(strrchr(get_class($this), '\\'), 1),
                 $user['id'],
                 [
                     'name' => $user['name'] ?? null,
