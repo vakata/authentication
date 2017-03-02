@@ -19,17 +19,21 @@ Create an instance.
 
 ```php
 public function __construct (  
-    string $domain,  
+    string $host,  
+    string $base,  
     string $user,  
-    string $pass  
+    string $pass,  
+    array $attr  
 )   
 ```
 
 |  | Type | Description |
 |-----|-----|-----|
-| `$domain` | `string` | the domain to check against |
+| `$host` | `string` | the host to check against |
+| `$base` | `string` | optional baseDN to use, defaults to the host root |
 | `$user` | `string` | optional username to use for searches |
 | `$pass` | `string` | optional password to use for searches |
+| `$attr` | `array` | optional additional fields to include in credentials (name, mail, userPrincipalName and distinguishedName are included) |
 
 ---
 
