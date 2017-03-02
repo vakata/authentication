@@ -11,29 +11,36 @@ use vakata\authentication\Credentials;
  */
 class LDAP implements AuthenticationInterface
 {
-    protected $domain = null;
+    protected $host = null;
+    protected $base = null;
     protected $user = null;
     protected $pass = null;
+    protected $attr = [];
 
     /**
      * Create an instance.
-     * @param  string      $domain the domain to check against
-     * @param  string      $user   optional username to use for searches
-     * @param  string      $pass   optional password to use for searches
+     * @param  string      $host         the host to check against
+     * @param  string      $base         optional baseDN to use, defaults to the host root
+     * @param  string      $user         optional username to use for searches
+     * @param  string      $pass         optional password to use for searches
+     * @param  array       $attr         optional additional fields to include in credentials (name, mail, userPrincipalName and distinguishedName are included)
      */
-    public function __construct(string $domain, string $user = null, string $pass = null)
+    public function __construct(string $host, string $base = null, string $user = null, string $pass = null, array $attr = [])
     {
-        $this->domain = $domain;
-        $this->user = strpos($user, ',') === false ? explode('@', $user)[0] . '@' . $domain : $user;
+        $this->host = $host;
+        $this->base = $base ? $base : 'DC=' . implode(',DC=', explode('.', $this->host));
+        $this->user = $user; // strpos($user, ',') === false ? explode('@', $user)[0] . '@' . $domain : $user;
         $this->pass = $pass;
+        $this->attr = array_unique(array_merge($attr, [ 'name', 'mail', 'userPrincipalName', 'distinguishedName' ]));
     }
 
     protected function search($ldap, $user)
     {
         $srch = ldap_search(
             $ldap,
-            'DC=' . implode(',DC=', explode('.', $this->domain)),
-            '(&(objectclass=person)(|(userprincipalname='.$user.')(distinguishedname='.$user.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))'
+            $this->base,
+            '(&(objectclass=person)(|(userprincipalname='.$user.')(distinguishedname='.$user.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
+            $this->attr
         );
         $data = ldap_first_entry($ldap, $srch);
         if (!$data) {
@@ -67,10 +74,11 @@ class LDAP implements AuthenticationInterface
         if (!$this->supports($data)) {
             throw new AuthenticationExceptionNotSupported('Missing credentials');
         }
-        $user = strpos($data['username'], ',') === false ?
-            explode('@', $data['username'])[0] . '@' . $this->domain :
-            $data['username'];
-        $ldap = ldap_connect($this->domain);
+        $user = $data['username'];
+        //strpos($data['username'], ',') === false ?
+        //    explode('@', $data['username'])[0] . '@' . $this->domain :
+        //    $data['username'];
+        $ldap = ldap_connect($this->host);
         if (!$ldap) {
             throw new LDAPExceptionConnectionError();
         }
@@ -99,7 +107,7 @@ class LDAP implements AuthenticationInterface
 
         return new Credentials(
             substr(strrchr(get_class($this), '\\'), 1),
-            $temp['userPrincipalName'] ?? $temp['sAMAccountName'] ?? $user,
+            $user, // $temp['userPrincipalName'] ?? $temp['distinguishedName'] ?? $user,
             $temp
         );
     }
