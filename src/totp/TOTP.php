@@ -5,6 +5,7 @@ namespace vakata\authentication\totp;
 use vakata\authentication\AuthenticationInterface;
 use vakata\authentication\AuthenticationExceptionNotSupported;
 use vakata\authentication\Credentials;
+use vakata\random\Generator;
 
 /**
  * One time password authentication (time-based).
@@ -34,6 +35,11 @@ class TOTP implements AuthenticationInterface
             'code_length'   => 6,
             'slice_length'  => 30
         ], $options);
+    }
+
+    public static function generateSecret()
+    {
+        return Generator::string(16,'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567');
     }
 
     protected function generateCode($now = null) {
