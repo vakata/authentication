@@ -237,7 +237,7 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
             ]
         );
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

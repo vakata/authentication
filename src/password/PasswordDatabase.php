@@ -99,7 +99,7 @@ class PasswordDatabase implements AuthenticationInterface
         }
         $this->db->query("UPDATE {$this->table} SET used = ? WHERE username = ?", [ date('Y-m-d H:i:s'), $data['username'] ]);
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

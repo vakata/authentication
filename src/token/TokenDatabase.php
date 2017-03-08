@@ -84,7 +84,7 @@ class TokenDatabase extends Token implements AuthenticationInterface
         $rslt = $this->getToken($data['token']);
         $this->db->query("UPDATE {$this->table} SET used = ? WHERE token = ?", [ date('Y-m-d H:i:s'), $token ]);
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $rslt['token'],
             $rslt
         );

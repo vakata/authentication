@@ -87,7 +87,7 @@ class Token implements AuthenticationInterface
             throw new TokenExceptionInvalid();
         }
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $data['token']
         );
     }

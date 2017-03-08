@@ -106,7 +106,7 @@ class LDAP implements AuthenticationInterface
         ldap_unbind($ldap);
 
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $user, // $temp['userPrincipalName'] ?? $temp['distinguishedName'] ?? $user,
             $temp
         );

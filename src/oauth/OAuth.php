@@ -115,7 +115,7 @@ abstract class OAuth implements AuthenticationInterface
                 throw new OAuthExceptionData();
             }
             return new Credentials(
-                strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+                substr(strrchr(get_class($this), '\\'), 1),
                 $user['id'],
                 [
                     'name' => $user['name'] ?? null,

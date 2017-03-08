@@ -169,7 +169,7 @@ class TOTP implements AuthenticationInterface
             throw new TOTPException();
         }
         return new Credentials(
-            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
+            substr(strrchr(get_class($this), '\\'), 1),
             $this->getSecret()
         );
     }
