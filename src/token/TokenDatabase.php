@@ -27,14 +27,26 @@ class TokenDatabase extends Token implements AuthenticationInterface
         $this->table = $table;
     }
 
+    public function getToken(string $token) {
+        if (!($token = $this->db->one("SELECT 1 FROM {$this->table} WHERE token = ?", $token))) {
+            throw new TokenExceptionNotFound();
+        }
+        return $token;
+    }
+    public function getTokenByName(string $name) {
+        if (!($token = !$this->db->one("SELECT 1 FROM {$this->table} WHERE name = ?", $name))) {
+            throw new TokenExceptionNotFound();
+        }
+        return $token;
+    }
     public function addToken(string $token = null, string $name = null)
     {
         if ($token === null) {
             do {
                 $token = Generator::string(64,'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567');
-            } while ($this->db->one("SELECT 1 FROM {$this->table} WHERE token = ?", $token));
+            } while ($this->getToken($token));
         }
-        if ($this->db->one("SELECT 1 FROM {$this->table} WHERE token = ?", $token)) {
+        if ($this->getToken($token)) {
             throw new TokenExceptionAlreadyExists('Token already exists');
         }
         $this->db->query(
@@ -45,9 +57,7 @@ class TokenDatabase extends Token implements AuthenticationInterface
     }
     public function deleteToken(string $token)
     {
-        if (!$this->db->one("SELECT 1 FROM {$this->table} WHERE token = ?", $token)) {
-            throw new TokenExceptionNotFound();
-        }
+        $this->getToken($token);
         $this->db->query("DELETE FROM {$this->table} WHERE token = ?", $token);
         return $this;
     }
@@ -71,12 +81,10 @@ class TokenDatabase extends Token implements AuthenticationInterface
         if (!$this->supports($data)) {
             throw new AuthenticationExceptionNotSupported('Missing credentials');
         }
-        $rslt = $this->db->one("SELECT * FROM {$this->table} WHERE token = ?", $data['token']);
-        if (!$rslt) {
-            throw new TokenExceptionInvalid();
-        }
+        $rslt = $this->getToken($data['token']);
+        $this->db->query("UPDATE {$this->table} SET used = ? WHERE token = ?", [ date('Y-m-d H:i:s'), $token ]);
         return new Credentials(
-            substr(strrchr(get_class($this), '\\'), 1),
+            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
             $rslt['token'],
             $rslt
         );

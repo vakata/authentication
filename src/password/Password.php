@@ -25,6 +25,22 @@ class Password implements AuthenticationInterface
     {
         return isset($this->passwords[$username]) ? $this->passwords[$username] : null;
     }
+    public function addPassword(string $username, string $password)
+    {
+        if (isset($this->passwords[$username])) {
+            throw new PasswordExceptionInvalidUsername('Username already exists');
+        }
+        $this->passwords[$username] = $password;
+        return $this;
+    }
+    public function deletePassword(string $username)
+    {
+        if (!isset($this->passwords[$username])) {
+            throw new PasswordExceptionInvalidUsername();
+        }
+        unset($this->passwords[$username]);
+        return $this;
+    }
     /**
      * Does the auth class support this input
      * @param  array    $data the auth input
@@ -55,7 +71,7 @@ class Password implements AuthenticationInterface
             throw new PasswordExceptionInvalidPassword();
         }
         return new Credentials(
-            substr(strrchr(get_class($this), '\\'), 1),
+            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null

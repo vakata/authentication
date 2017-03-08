@@ -23,17 +23,33 @@ class Token implements AuthenticationInterface
         $this->tokens = $tokens;
     }
 
-    public function addToken(string $token = null)
+    public function getToken(string $token) {
+        if (($index = array_search($token, $this->tokens)) === false) {
+            throw new TokenExceptionNotFound();
+        }
+        return $token;
+    }
+    public function getTokenByName(string $name) {
+        if (!isset($this->tokens[$name])) {
+            throw new TokenExceptionNotFound();
+        }
+        return $this->tokens[$name];
+    }
+    public function addToken(string $token = null, string $name = null)
     {
         if ($token === null) {
             do {
-                $token = Generator::string(64,'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567');
+                $token = Generator::string(64);
             } while (in_array($token, $this->tokens));
         }
         if (in_array($token, $this->tokens)) {
             throw new TokenExceptionAlreadyExists('Token already exists');
         }
-        $this->tokens[] = $token;
+        if ($name) {
+            $this->tokens[$name] = $token;
+        } else {
+            $this->tokens[] = $token;
+        }
         return $token;
     }
     public function deleteToken(string $token)
@@ -65,11 +81,13 @@ class Token implements AuthenticationInterface
         if (!$this->supports($data)) {
             throw new AuthenticationExceptionNotSupported('Missing credentials');
         }
-        if (!in_array($data['token'], $this->tokens)) {
+        try {
+            $this->getToken($data['token']);
+        } catch (TokenExceptionNotFound $e) {
             throw new TokenExceptionInvalid();
         }
         return new Credentials(
-            substr(strrchr(get_class($this), '\\'), 1),
+            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
             $data['token']
         );
     }

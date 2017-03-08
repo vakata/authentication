@@ -29,6 +29,28 @@ class PasswordDatabase implements AuthenticationInterface
     {
         return $this->db->one("SELECT password FROM {$this->table} WHERE username = ?", [ $username ]);
     }
+    public function addPassword(string $username, string $password)
+    {
+        if ($this->getPasswordByUsername($username)) {
+            throw new PasswordExceptionInvalidUsername('Username already exists');
+        }
+        $this->db->query(
+            "INSERT INTO {$this->table} (username, password, created) VALUES(?, ?, ?)",
+            [ $username, $password, date('Y-m-d H:i:s') ]
+        );
+        return $this;
+    }
+    public function deletePassword(string $username)
+    {
+        if (!$this->getPasswordByUsername($username)) {
+            throw new PasswordExceptionInvalidUsername();
+        }
+        $this->db->query(
+            "DELETE FROM {$this->table} WHERE username = ?",
+            [ $username ]
+        );
+        return $this;
+    }
     /**
      * Change a user's password
      * @param  string         $username the username whose password is being changed
@@ -75,8 +97,9 @@ class PasswordDatabase implements AuthenticationInterface
         if (password_needs_rehash($pass, PASSWORD_DEFAULT)) {
             $this->changePassword($data['username'], $data['password']);
         }
+        $this->db->query("UPDATE {$this->table} SET used = ? WHERE username = ?", [ date('Y-m-d H:i:s'), $data['username'] ]);
         return new Credentials(
-            substr(strrchr(get_class($this), '\\'), 1),
+            strtolower(substr(strrchr(get_class($this), '\\'), 1)),
             $data['username'],
             [
                 'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null
