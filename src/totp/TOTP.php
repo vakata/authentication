@@ -26,9 +26,12 @@ class TOTP implements AuthenticationInterface
      * @param  string      $secret  the secret key
      * @param  array       $options configuration
      */
-    public function __construct(string $secret, array $options = [])
+    public function __construct(string $secret = null, array $options = [])
     {
-        $this->secret = $secret;
+        $this->secret = $secret === null ? static::generateSecret() : $secret;
+        if (!preg_match('(^[ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]{16}$)i', $this->secret)) {
+            throw new TOTPExceptionInvalidSecret();
+        }
         $this->options  = array_merge([
             'title'         => isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'TOTP',
             'code_timeout'  => 60,
@@ -115,7 +118,7 @@ class TOTP implements AuthenticationInterface
      */
     public function getSecret()
     {
-        return substr(static::base32_encode(sha1($this->secret)), 0, 16);
+        return $this->secret;
     }
     /**
      * get the secret URI (used in code generator apps)
@@ -166,7 +169,7 @@ class TOTP implements AuthenticationInterface
             }
         }
         if (!$isValid) {
-            throw new TOTPException();
+            throw new TOTPExceptionInvalidCode();
         }
         return new Credentials(
             substr(strrchr(get_class($this), '\\'), 1),
