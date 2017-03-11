@@ -9,34 +9,68 @@ use vakata\authentication\Credentials;
 /**
  * A class for simple password authentication - user/pass combinations are looked up in a database.
  */
-class PasswordDatabase implements AuthenticationInterface
+class PasswordDatabase extends Password implements AuthenticationInterface
 {
     protected $db;
     protected $table;
+    protected $fields;
+    protected $filter;
+    protected $changeEvery;
 
     /**
      * Create an instance. Requires a table with `username` and `pasword` columns
      * @param  DatabaseInterface $db    a database object
-     * @param  string            $table the table to use (defaults to `users_password`)
+     * @param  string            $table the table to use
+     * @param  array             $rules optional rules for the class that will override the defaults
+     * @param  string            $fields the columns to use (defaults to 'username', 'password', 'created', 'used')
+     * @param  string            $filter additional filter for all queries
      */
-    public function __construct(DatabaseInterface $db, $table = 'users_password')
-    {
+    public function __construct(
+        DatabaseInterface $db,
+        string $table,
+        array $rules = [],
+        array $fields = [],
+        array $filter = []
+    ) {
+        parent::__construct([], $rules);
+        if (!$this->rules['changeEvery']) {
+            $this->rules['changeEvery'] = '30 days';
+        }
         $this->db = $db;
         $this->table = $table;
+        foreach (['username', 'password', 'created', 'used'] as $column) {
+            $this->fields[$column] = isset($fields[$column]) ? $fields[$column] : $column;
+        }
+        $this->filter = $filter;
     }
-
     protected function getPasswordByUsername($username)
     {
-        return $this->db->one("SELECT password FROM {$this->table} WHERE username = ?", [ $username ]);
+        $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+        $sql[] = $this->fields['username'] . ' = ?';
+        $par = array_values($this->filter);
+        $par[] = $username;
+        return $this->db->one(
+            "SELECT {$this->fields['password']} FROM {$this->table} WHERE " . implode(' AND ', $sql),
+            $par
+        );
     }
+
     public function addPassword(string $username, string $password)
     {
         if ($this->getPasswordByUsername($username)) {
             throw new PasswordExceptionInvalidUsername('Username already exists');
         }
+        $sql = array_keys($this->filter);
+        $par = array_values($this->filter);
+        $sql[] = $this->fields['username'];
+        $sql[] = $this->fields['password'];
+        $sql[] = $this->fields['created'];
+        $par[] = $username;
+        $par[] = $password;
+        $par[] = date('Y-m-d H:i:s');
         $this->db->query(
-            "INSERT INTO {$this->table} (username, password, created) VALUES(?, ?, ?)",
-            [ $username, $password, date('Y-m-d H:i:s') ]
+            "INSERT INTO {$this->table} (". implode(', ', $sql) .") VALUES (??)",
+            [ $par ]
         );
         return $this;
     }
@@ -45,9 +79,14 @@ class PasswordDatabase implements AuthenticationInterface
         if (!$this->getPasswordByUsername($username)) {
             throw new PasswordExceptionInvalidUsername();
         }
+
+        $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+        $sql[] = $this->fields['username'] . ' = ?';
+        $par = array_values($this->filter);
+        $par[] = $username;
         $this->db->query(
-            "DELETE FROM {$this->table} WHERE username = ?",
-            [ $username ]
+            "DELETE FROM {$this->table} WHERE " . implode(' AND ', $sql),
+            $par
         );
         return $this;
     }
@@ -55,24 +94,45 @@ class PasswordDatabase implements AuthenticationInterface
      * Change a user's password
      * @param  string         $username the username whose password is being changed
      * @param  string         $password the new password
+     * @param  bool           $isRehash is this a system initiated rehash
      */
-    public function changePassword(string $username, string $password) {
+    public function changePassword(string $username, string $password, bool $isRehash = false)
+    {
         if (!strlen($password)) {
             throw new PasswordExceptionShortPassword();
         }
-        $this->db->query(
-            "UPDATE {$this->table} SET password = ? WHERE username = ?",
-            [ password_hash($password, PASSWORD_DEFAULT), $username ]
-        );
-    }
-    /**
-     * Does the auth class support this input
-     * @param  array    $data the auth input
-     * @return boolean        is this input supported by the class
-     */
-    public function supports(array $data = []) : bool
-    {
-        return (isset($data['username']) && isset($data['password']));
+        if (!$isRehash) {
+            static::checkPassword($username, $password, $this->rules);
+        }
+        
+        $pass = $this->getPasswordByUsername($username);
+        if (!$pass) {
+            throw new PasswordExceptionInvalidUsername();
+        }
+        if (strlen($pass) < 32) {
+            $pass = password_hash($pass, PASSWORD_DEFAULT);
+        }
+        if (!$isRehash && $this->rules['doNotUseSame'] && password_verify($password, $pass)) {
+            throw new PasswordExceptionSamePassword();
+        }
+
+        $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+        $sql[] = $this->fields['username'] . ' = ?';
+        $par = array_values($this->filter);
+        $par[] = $username;
+        array_unshift($par, password_hash($password, PASSWORD_DEFAULT));
+        if (!$isRehash) {
+            array_unshift($par, date('Y-m-d H:i:s'));
+            $this->db->query(
+                "UPDATE {$this->table} SET {$this->fields['created']} = ?, {$this->fields['password']} = ? WHERE " . implode(' AND ', $sql),
+                $par
+            );
+        } else {
+            $this->db->query(
+                "UPDATE {$this->table} SET {$this->fields['password']} = ? WHERE " . implode(' AND ', $sql),
+                $par
+            );
+        }
     }
     /**
      * Authenticate using the supplied creadentials.
@@ -81,29 +141,35 @@ class PasswordDatabase implements AuthenticationInterface
      */
     public function authenticate(array $data = []) : Credentials
     {
-        if (!$this->supports($data)) {
-            throw new AuthenticationExceptionNotSupported('Missing credentials');
+        $ret = parent::authenticate($data);
+
+        if (isset($this->rules['changeEvery']) && $this->rules['changeEvery']) {
+            $interval = is_numeric($this->rules['changeEvery']) ?
+                (int)$this->rules['changeEvery'] :
+                strtotime('+' . trim($this->rules['changeEvery'], '+'), 0);
+            $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+            $sql[] = $this->fields['username'] . ' = ?';
+            $par = array_values($this->filter);
+            $par[] = $data['username'];
+            $lastChange = $this->db->one(
+                "SELECT {$this->fields['created']} FROM {$this->table} WHERE " . implode(' AND ', $sql),
+                $par
+            );
+            if (strtotime($lastChange) + $interval < time()) {
+                throw new PasswordExceptionMustChange();
+            }
         }
-        $pass = $this->getPasswordByUsername($data['username']);
-        if (!$pass) {
-            throw new PasswordExceptionInvalidUsername();
-        }
-        if (strlen($pass) < 32 && $pass === $data['password']) {
-            $this->changePassword($data['username'], $data['password']);
-        }
-        if (!password_verify($data['password'], $pass)) {
-            throw new PasswordExceptionInvalidPassword();
-        }
-        if (password_needs_rehash($pass, PASSWORD_DEFAULT)) {
-            $this->changePassword($data['username'], $data['password']);
-        }
-        $this->db->query("UPDATE {$this->table} SET used = ? WHERE username = ?", [ date('Y-m-d H:i:s'), $data['username'] ]);
-        return new Credentials(
-            substr(strrchr(get_class($this), '\\'), 1),
-            $data['username'],
-            [
-                'mail' => filter_var($data['username'], FILTER_VALIDATE_EMAIL) ? $data['username'] : null
-            ]
+
+        $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+        $sql[] = $this->fields['username'] . ' = ?';
+        $par = array_values($this->filter);
+        $par[] = $data['username'];
+        array_unshift($par, date('Y-m-d H:i:s'));
+        $this->db->query(
+            "UPDATE {$this->table} SET {$this->fields['used']} = ? WHERE " . implode(' AND ', $sql),
+            $par
         );
+
+        return $ret;
     }
 }

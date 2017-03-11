@@ -99,26 +99,29 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * Change a user's password
      * @param  string         $username the username whose password is being changed
      * @param  string         $password the new password
+     * @param  bool           $isRehash is this a system initiated rehash
      */
-    public function changePassword(string $username, string $password)
+    public function changePassword(string $username, string $password, bool $isRehash = false)
     {
-        if ($this->rules['minLength'] && strlen($password) < $this->rules['minLength']) {
-            throw new PasswordExceptionShortPassword('Password too short');
-        }
-        if ($this->rules['minStrength'] && $this->calculateStrength($password) < $this->rules['minStrength']) {
-            throw new PasswordExceptionEasyPassword();
-        }
-        if ($this->rules['uniquePasswordCount']) {
-            $passes = $this->db->get(
-                "SELECT data FROM {$this->logTable} WHERE username = ? AND action = ? ORDER BY created DESC", // LIMIT ?",
-                [ $username, 'change' ] // $this->rules['uniquePasswordCount'] ]
-            );
-            foreach ($passes as $k => $pass) {
-                if ($k >= $this->rules['uniquePasswordCount']) {
-                    break;
-                }
-                if (password_verify($password, $pass)) {
-                    throw new PasswordExceptionRepeatPassword('Password matches a recent one');
+        if (!$isRehash) {
+            if ($this->rules['minLength'] && strlen($password) < $this->rules['minLength']) {
+                throw new PasswordExceptionShortPassword('Password too short');
+            }
+            if ($this->rules['minStrength'] && $this->calculateStrength($password) < $this->rules['minStrength']) {
+                throw new PasswordExceptionEasyPassword();
+            }
+            if ($this->rules['uniquePasswordCount']) {
+                $passes = $this->db->get(
+                    "SELECT data FROM {$this->logTable} WHERE username = ? AND action = ? ORDER BY created DESC", // LIMIT ?",
+                    [ $username, 'change' ] // $this->rules['uniquePasswordCount'] ]
+                );
+                foreach ($passes as $k => $pass) {
+                    if ($k >= $this->rules['uniquePasswordCount']) {
+                        break;
+                    }
+                    if (password_verify($password, $pass)) {
+                        throw new PasswordExceptionRepeatPassword('Password matches a recent one');
+                    }
                 }
             }
         }
