@@ -1,7 +1,7 @@
 <?php
 namespace vakata\authentication\password;
 
-use vakata\database\DatabaseInterface;
+use vakata\database\DBInterface;
 use vakata\authentication\AuthenticationInterface;
 use vakata\authentication\AuthenticationExceptionNotSupported;
 use vakata\authentication\Credentials;
@@ -19,14 +19,14 @@ class PasswordDatabase extends Password implements AuthenticationInterface
 
     /**
      * Create an instance. Requires a table with `username` and `pasword` columns
-     * @param  DatabaseInterface $db    a database object
+     * @param  DBInterface       $db    a database object
      * @param  string            $table the table to use
      * @param  array             $rules optional rules for the class that will override the defaults
      * @param  string            $fields the columns to use (defaults to 'username', 'password', 'created', 'used')
      * @param  string            $filter additional filter for all queries
      */
     public function __construct(
-        DatabaseInterface $db,
+        DBInterface $db,
         string $table,
         array $rules = [],
         array $fields = [],

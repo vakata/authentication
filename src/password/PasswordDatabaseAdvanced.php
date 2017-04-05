@@ -1,7 +1,7 @@
 <?php
 namespace vakata\authentication\password;
 
-use vakata\database\DatabaseInterface as DBI;
+use vakata\database\DBInterface;
 use vakata\authentication\AuthenticationInterface;
 use vakata\authentication\AuthenticationException;
 use vakata\authentication\AuthenticationExceptionNotSupported;
@@ -30,12 +30,12 @@ class PasswordDatabaseAdvanced extends PasswordDatabase
      * * `errorLongTimeoutThreshold` - the number of wrong attempts before enforcing a long timeout - defaults to `10`
      * * `ipChecks` - should the above timeouts be enforced on IP level too - defaults to `true`
      * * `uniquePasswordCount` - do not allow reusing the last X passwords - defaults to `3`
-     * @param  DatabaseInterface $db    a database object
+     * @param  DBInterface       $db    a database object
      * @param  string            $table the table to use (defaults to `users_password`)
      * @param  string            $logTable the log table to use (defaults to `users_password_log`)
      * @param  array             $rules optional rules for the class that will override the defaults
      */
-    public function __construct(DBI $db, $table = 'users_password', $logTable = 'users_password_log', array $rules = [])
+    public function __construct(DBInterface $db, $table = 'users_password', $logTable = 'users_password_log', array $rules = [])
     {
         parent::__construct($db, $table);
         $this->logTable = $logTable;

@@ -2,7 +2,7 @@
 
 namespace vakata\authentication\token;
 
-use vakata\database\DatabaseInterface;
+use vakata\database\DBInterface;
 use vakata\authentication\AuthenticationInterface;
 use vakata\authentication\AuthenticationExceptionNotSupported;
 use vakata\authentication\Credentials;
@@ -18,10 +18,10 @@ class TokenDatabase extends Token implements AuthenticationInterface
 
     /**
      * Create an instance. Requires a table with `token`, `name` and `created` columns
-     * @param  DatabaseInterface $db    a database object
+     * @param  DBInterface       $db    a database object
      * @param  string            $table the table to use (defaults to `users_password`)
      */
-    public function __construct(DatabaseInterface $db, $table = 'tokens')
+    public function __construct(DBInterface $db, $table = 'tokens')
     {
         $this->db = $db;
         $this->table = $table;
