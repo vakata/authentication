@@ -130,7 +130,7 @@ class Password implements AuthenticationInterface
      */
     public function supports(array $data = []) : bool
     {
-        return (isset($data['username']) && isset($data['password']));
+        return (isset($data['username']) && isset($data['password']) && !empty($data['username']));
     }
     /**
      * Authenticate using the supplied credentials.

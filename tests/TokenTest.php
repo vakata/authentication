@@ -7,7 +7,8 @@ class TokenTest extends \PHPUnit_Framework_TestCase
     {
         $token = new \vakata\authentication\token\Token();
         $this->assertEquals(false, $token->supports(['username' => '', 'password' => '']));
-        $this->assertEquals(true, $token->supports(['token' => '']));
+        $this->assertEquals(false, $token->supports(['token' => '']));
+        $this->assertEquals(true, $token->supports(['token' => 'asdf']));
     }
     public function testAddToken()
     {

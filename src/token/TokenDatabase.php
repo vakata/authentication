@@ -69,7 +69,7 @@ class TokenDatabase extends Token implements AuthenticationInterface
      */
     public function supports(array $data = []) : bool
     {
-        return isset($data['token']);
+        return isset($data['token']) && !empty($data['token']);
     }
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.

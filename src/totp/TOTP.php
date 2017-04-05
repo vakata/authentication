@@ -146,7 +146,7 @@ class TOTP implements AuthenticationInterface
      */
     public function supports(array $data = []) : bool
     {
-        return isset($data['totp']);
+        return isset($data['totp']) && !empty($data['totp']);
     }
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.
