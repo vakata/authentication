@@ -37,12 +37,18 @@ class LDAP implements AuthenticationInterface
     protected function search($ldap, $user)
     {
         $escp = ldap_escape($user, null, LDAP_ESCAPE_FILTER);
+        if (!$escp) {
+            return null;
+        }
         $srch = ldap_search(
             $ldap,
             $this->base,
             '(&(objectclass=person)(|(userprincipalname='.$escp.')(distinguishedname='.$escp.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
             $this->attr
         );
+        if (!$srch) {
+            return null;
+        }
         $data = ldap_first_entry($ldap, $srch);
         if (!$data) {
             return null;
@@ -103,6 +109,9 @@ class LDAP implements AuthenticationInterface
         }
         if (!$temp) {
             $temp = $this->search($ldap, $user);
+        }
+        if (!$temp) {
+            throw new LDAPExceptionInvalidUsername();
         }
         ldap_unbind($ldap);
 
