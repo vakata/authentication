@@ -36,10 +36,11 @@ class LDAP implements AuthenticationInterface
 
     protected function search($ldap, $user)
     {
+        $escp = ldap_escape($user, null, LDAP_ESCAPE_FILTER);
         $srch = ldap_search(
             $ldap,
             $this->base,
-            '(&(objectclass=person)(|(userprincipalname='.$user.')(distinguishedname='.$user.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
+            '(&(objectclass=person)(|(userprincipalname='.$escp.')(distinguishedname='.$escp.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
             $this->attr
         );
         $data = ldap_first_entry($ldap, $srch);
