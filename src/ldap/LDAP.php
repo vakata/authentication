@@ -36,30 +36,34 @@ class LDAP implements AuthenticationInterface
 
     protected function search($ldap, $user)
     {
-        $escp = ldap_escape($user, null, LDAP_ESCAPE_FILTER);
-        if (!$escp) {
-            return null;
-        }
-        $srch = ldap_search(
-            $ldap,
-            $this->base,
-            '(&(objectclass=person)(|(userprincipalname='.$escp.')(distinguishedname='.$escp.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
-            $this->attr
-        );
-        if (!$srch) {
-            return null;
-        }
-        $data = ldap_first_entry($ldap, $srch);
-        if (!$data) {
-            return null;
-        }
-        $temp = [];
-        foreach (ldap_get_attributes($ldap, $data) as $k => $v) {
-            if ($v && isset($v['count']) && $v['count'] === 1) {
-                $temp[$k] = $v[0];
+        try {
+            $escp = ldap_escape($user, null, LDAP_ESCAPE_FILTER);
+            if (!$escp) {
+                return null;
             }
+            $srch = ldap_search(
+                $ldap,
+                $this->base,
+                '(&(objectclass=person)(|(userprincipalname='.$escp.')(distinguishedname='.$escp.'))(!(userAccountControl:1.2.840.113556.1.4.803:=2)))',
+                $this->attr
+            );
+            if (!$srch) {
+                return null;
+            }
+            $data = ldap_first_entry($ldap, $srch);
+            if (!$data) {
+                return null;
+            }
+            $temp = [];
+            foreach (ldap_get_attributes($ldap, $data) as $k => $v) {
+                if ($v && isset($v['count']) && $v['count'] === 1) {
+                    $temp[$k] = $v[0];
+                }
+            }
+            return $temp;
+        } catch (\Exception $e) {
+            return null;
         }
-        return $temp;
     }
 
     /**
