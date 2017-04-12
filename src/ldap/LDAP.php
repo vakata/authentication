@@ -73,7 +73,7 @@ class LDAP implements AuthenticationInterface
      */
     public function supports(array $data = []) : bool
     {
-        return (isset($data['username']) && isset($data['password']) && !empty($data['username']));
+        return (isset($data['username']) && isset($data['password']) && !empty($data['username']) && !empty($data['password']));
     }
     /**
      * Authenticate using the supplied creadentials. Returns a JWT token or throws an AuthenticationException.

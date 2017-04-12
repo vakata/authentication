@@ -6,7 +6,8 @@ class PasswordTest extends \PHPUnit_Framework_TestCase
     public function testSupports()
     {
         $password = new \vakata\authentication\password\Password();
-        $this->assertEquals(true, $password->supports(['username' => 'asdf', 'password' => '']));
+        $this->assertEquals(true, $password->supports(['username' => 'asdf', 'password' => 'asdf']));
+        $this->assertEquals(false, $password->supports(['username' => 'asdf', 'password' => '']));
         $this->assertEquals(false, $password->supports(['username' => '', 'password' => '']));
         $this->assertEquals(false, $password->supports(['password' => '']));
     }
