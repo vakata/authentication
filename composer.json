@@ -13,10 +13,6 @@
         "homepage": "http://www.vakata.com",
         "role": "Developer"
     }],
-    "repositories": [{
-        "type": "vcs",
-        "url": "https://github.com/vakata/phpdoc-md"
-    }],
     "require": {
         "vakata/random": ">=1.1.1",
         "vakata/database": "^3.0.2"
