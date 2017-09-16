@@ -21,6 +21,7 @@ abstract class OAuth implements AuthenticationInterface
     protected $infoUrl;
     protected $permissions = '';
     protected $grantType = 'authorization_code';
+    protected $authHeader = false;
 
     /**
      * Create an instance.
@@ -112,17 +113,23 @@ abstract class OAuth implements AuthenticationInterface
                 throw new OAuthExceptionToken();
             }
             $authToken = $authToken['access_token'];
-            $user = @file_get_contents($this->infoUrl . 'access_token=' . rawurlencode($authToken));
-            if (!$user || !($user = @json_decode($user, true)) || isset($user['error'])) {
+            if ($this->authHeader) {
+                $user = @file_get_contents($this->infoUrl, false, stream_context_create([
+                    'http' => [
+                        'header'  => "Authorization: Bearer ".$authToken."\r\n",
+                        'ignore_errors' => true
+                    ]
+                ]));
+            } else {
+                $user = @file_get_contents($this->infoUrl . 'access_token=' . rawurlencode($authToken));
+            }
+            if (!$user || !($user = @json_decode($user, true)) || isset($user['error']) || !isset($user['id'])) {
                 throw new OAuthExceptionData();
             }
             return new Credentials(
                 substr(strrchr(get_class($this), '\\'), 1),
                 $user['id'],
-                [
-                    'name' => $user['name'] ?? null,
-                    'mail' => $user['email'] ?? null
-                ]
+                $this->extractUserData($user)
             );
         }
         throw new OAuthExceptionRedirect(
@@ -136,5 +143,12 @@ abstract class OAuth implements AuthenticationInterface
     public function getCallbackURL()
     {
         return $this->callbackUrl;
+    }
+    protected function extractUserData(array $data) : array
+    {
+        return [
+            'name' => $data['name'] ?? null,
+            'mail' => $data['mail'] ?? null
+        ];
     }
 }
