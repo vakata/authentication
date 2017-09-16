@@ -3,6 +3,7 @@ namespace vakata\authentication\oauth;
 
 use vakata\authentication\AuthenticationInterface;
 use vakata\authentication\AuthenticationException;
+use vakata\authentication\AuthenticationExceptionNotSupported;
 use vakata\authentication\Credentials;
 
 /**
@@ -26,9 +27,9 @@ abstract class OAuth implements AuthenticationInterface
      * @param  string      $publicKey   the public key
      * @param  string      $privateKey  the secret key
      * @param  string      $callbackUrl the callback URL
-     * @param  string      $permissions optional permissions
+     * @param  string|null $permissions optional permissions
      */
-    public function __construct($publicKey, $privateKey, $callbackUrl, $permissions = '')
+    public function __construct($publicKey, $privateKey, $callbackUrl, $permissions = null)
     {
         if (!$this->provider) {
             $this->provider = substr(strrchr(get_class($this), '\\'), 1);
@@ -36,7 +37,7 @@ abstract class OAuth implements AuthenticationInterface
         $this->publicKey = $publicKey;
         $this->privateKey = $privateKey;
         $this->callbackUrl = $callbackUrl;
-        $this->permissions = $permissions;
+        $this->permissions = $permissions ?? $this->permissions;
     }
 
     protected function state()
@@ -73,12 +74,13 @@ abstract class OAuth implements AuthenticationInterface
      */
     public function authenticate(array $data = []) : Credentials
     {
-        if (isset($_SERVER['REQUEST_URI']) &&
-            parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === parse_url($this->callbackUrl, PHP_URL_PATH)
-        ) {
-            if (isset($_GET['error_reason']) || isset($_GET['error']) || !isset($_GET['code'])) {
-                throw new OAuthExceptionToken();
-            }
+        if (!$this->supports($data)) {
+            throw new AuthenticationExceptionNotSupported('Invalid URL');
+        }
+        if (isset($_GET['error'])) {
+            throw new OAuthExceptionToken();
+        }
+        if (isset($_GET['code'])) {
             if (!isset($_GET['state']) || $_GET['state'] !== $this->state()) {
                 throw new OAuthExceptionState();
             }
@@ -122,14 +124,13 @@ abstract class OAuth implements AuthenticationInterface
                     'mail' => $user['email'] ?? null
                 ]
             );
-        } else {
-            header('Location: ' .
-                $this->authorizeUrl .
-                    'client_id='    . urlencode($this->publicKey) . '&' .
-                    'scope='        . urlencode($this->permissions) . '&' .
-                    'redirect_uri=' . urlencode($this->callbackUrl) . '&' .
-                    'state='        . $this->state()
-            );
         }
+        throw new OAuthExceptionRedirect(
+            $this->authorizeUrl .
+                'client_id='    . urlencode($this->publicKey) . '&' .
+                'scope='        . urlencode($this->permissions) . '&' .
+                'redirect_uri=' . urlencode($this->callbackUrl) . '&' .
+                'state='        . $this->state()
+        );
     }
 }
