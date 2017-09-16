@@ -133,4 +133,8 @@ abstract class OAuth implements AuthenticationInterface
                 'state='        . $this->state()
         );
     }
+    public function getCallbackURL()
+    {
+        return $this->callbackUrl;
+    }
 }
