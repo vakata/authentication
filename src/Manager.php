@@ -21,6 +21,10 @@ class Manager implements AuthenticationInterface
         $this->providers[] = $provider;
         return $this;
     }
+    public function getProviders(): array
+    {
+        return $this->providers;
+    }
     /**
      * Do any of the providers support this input
      * @param  array    $data the auth input
