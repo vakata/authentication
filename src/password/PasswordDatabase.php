@@ -30,11 +30,15 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         string $table,
         array $rules = [],
         array $fields = [],
-        array $filter = []
+        array $filter = [],
+        string $key = null
     ) {
-        parent::__construct([], $rules);
+        parent::__construct([], $rules, $key);
         if (!$this->rules['changeEvery']) {
             $this->rules['changeEvery'] = '30 days';
+        }
+        if (!$this->rules['changeFirst']) {
+            $this->rules['changeFirst'] = true;
         }
         $this->db = $db;
         $this->table = $table;
@@ -66,7 +70,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         $sql[] = $this->fields['password'];
         $sql[] = $this->fields['created'];
         $par[] = $username;
-        $par[] = $password;
+        $par[] = $this->hash($password);
         $par[] = date('Y-m-d H:i:s');
         $this->db->query(
             "INSERT INTO {$this->table} (". implode(', ', $sql) .") VALUES (??)",
@@ -109,10 +113,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         if (!$pass) {
             throw new PasswordExceptionInvalidUsername();
         }
-        if (strlen($pass) < 32) {
-            $pass = password_hash($pass, PASSWORD_DEFAULT);
-        }
-        if (!$isRehash && $this->rules['doNotUseSame'] && password_verify($password, $pass)) {
+        if (!$isRehash && $this->rules['doNotUseSame'] && $this->verify($password, $pass)) {
             throw new PasswordExceptionSamePassword();
         }
 
@@ -120,11 +121,12 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         $sql[] = $this->fields['username'] . ' = ?';
         $par = array_values($this->filter);
         $par[] = $username;
-        array_unshift($par, password_hash($password, PASSWORD_DEFAULT));
+        array_unshift($par, $this->hash($password));
         if (!$isRehash) {
             array_unshift($par, date('Y-m-d H:i:s'));
+            array_unshift($par, date('Y-m-d H:i:s'));
             $this->db->query(
-                "UPDATE {$this->table} SET {$this->fields['created']} = ?, {$this->fields['password']} = ? WHERE " . implode(' AND ', $sql),
+                "UPDATE {$this->table} SET {$this->fields['created']} = ?, {$this->fields['used']} = ?, {$this->fields['password']} = ? WHERE " . implode(' AND ', $sql),
                 $par
             );
         } else {
@@ -156,6 +158,20 @@ class PasswordDatabase extends Password implements AuthenticationInterface
                 $par
             );
             if (strtotime($lastChange) + $interval < time()) {
+                throw new PasswordExceptionMustChange();
+            }
+        }
+
+        if (isset($this->rules['changeFirst']) && $this->rules['changeFirst']) {
+            $sql = array_map(function ($v) { return $v . ' = ?'; }, array_keys($this->filter));
+            $sql[] = $this->fields['username'] . ' = ?';
+            $par = array_values($this->filter);
+            $par[] = $data['username'];
+            $lastUsed = $this->db->one(
+                "SELECT {$this->fields['used']} FROM {$this->table} WHERE " . implode(' AND ', $sql),
+                $par
+            );
+            if ($lastUsed === null) {
                 throw new PasswordExceptionMustChange();
             }
         }

@@ -13,15 +13,18 @@ class Password implements AuthenticationInterface
 {
     protected $passwords = [];
     protected $rules = [];
+    protected $key = null;
 
     /**
      * Create an instance.
      * @param  array       $passwords user => pass combinations, passwords may be hashed or plain text
      * @param  array       $rules optional rules for password strength
      */
-    public function __construct(array $passwords = [], array $rules = [])
+    public function __construct(array $passwords = [], array $rules = [], $key = null)
     {
-        $this->passwords = $passwords;
+        foreach ($passwords as $user => $pass) {
+            $this->addPassword($user, $pass);
+        }
         $this->rules = array_merge([
             'minLength' => 8,
             'doNotMatchUser' => true,
@@ -30,6 +33,7 @@ class Password implements AuthenticationInterface
             'doNotUseBad' => 2500,
             'doNotUseSame' => true
         ], $rules);
+        $this->key = $key;
     }
     protected function getPasswordByUsername($username)
     {
@@ -40,7 +44,7 @@ class Password implements AuthenticationInterface
         if (isset($this->passwords[$username])) {
             throw new PasswordExceptionInvalidUsername('Username already exists');
         }
-        $this->passwords[$username] = $password;
+        $this->passwords[$username] = $this->hash($password);
         return $this;
     }
     public function deletePassword(string $username)
@@ -115,13 +119,10 @@ class Password implements AuthenticationInterface
         if (!$pass) {
             throw new PasswordExceptionInvalidUsername();
         }
-        if (strlen($pass) < 32) {
-            $pass = password_hash($pass, PASSWORD_DEFAULT);
-        }
-        if (!$isRehash && $this->rules['doNotUseSame'] && password_verify($password, $pass)) {
+        if (!$isRehash && $this->rules['doNotUseSame'] && $this->verify($password, $pass)) {
             throw new PasswordExceptionSamePassword();
         }
-        $this->passwords[$username] = password_hash($password, PASSWORD_DEFAULT);
+        $this->passwords[$username] = $this->hash($password);
     }
     /**
      * Does the auth class support this input
@@ -132,6 +133,49 @@ class Password implements AuthenticationInterface
     {
         return (isset($data['username']) && isset($data['password']) && !empty($data['username']) && !empty($data['password']));
     }
+
+    public function hash($password)
+    {
+        $hash = password_hash(hash('sha512', $password), PASSWORD_DEFAULT);
+        if (!$this->key) {
+            return $hash;
+        }
+        $iv = openssl_random_pseudo_bytes(12);
+        $tag = openssl_random_pseudo_bytes(16);
+        $cipher = openssl_encrypt($hash, 'aes-256-gcm', $this->key, 0, $iv, $tag);
+        return base64_encode($iv) . "\n" . base64_encode($tag) . "\n" . $cipher;
+    }
+    public function verify($password, $hash)
+    {
+        $parts = explode("\n", $hash);
+        if ($this->key &&
+            count($parts) == 3 &&
+            strlen(base64_decode($parts[0])) === 12 &&
+            strlen(base64_decode($parts[1])) === 16
+        ) {
+            $iv = base64_decode($parts[0]);
+            $tag = base64_decode($parts[1]);
+            $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
+        }
+        return password_verify(hash('sha512', $password), $hash) || password_verify($password, $hash);
+    }
+    public function rehash($hash, $password = null)
+    {
+        if ($this->key) {
+            $parts = explode("\n", $hash);
+            if (count($parts) !== 3) {
+                return true;
+            }
+            $iv = base64_decode($parts[0]);
+            $tag = base64_decode($parts[1]);
+            $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
+        }
+        if ($password !== null && password_verify($password, $hash)) {
+            return true;
+        }
+        return password_needs_rehash($hash, PASSWORD_DEFAULT);
+    }
+
     /**
      * Authenticate using the supplied credentials.
      * @param  array        $data the auth input (should contain `username` and `password` keys)
@@ -146,15 +190,11 @@ class Password implements AuthenticationInterface
         if (!$pass) {
             throw new PasswordExceptionInvalidUsername();
         }
-        if (strlen($pass) < 32 && $pass === $data['password']) {
+        if (!$this->verify($data['password'], $pass)) {
+            throw new PasswordExceptionInvalidPassword();
+        }
+        if ($this->rehash($pass, $data['password'])) {
             $this->changePassword($data['username'], $data['password'], true);
-        } else {
-            if (!password_verify($data['password'], $pass)) {
-                throw new PasswordExceptionInvalidPassword();
-            }
-            if (password_needs_rehash($pass, PASSWORD_DEFAULT)) {
-                $this->changePassword($data['username'], $data['password'], true);
-            }
         }
         return new Credentials(
             substr(strrchr(get_class($this), '\\'), 1),
