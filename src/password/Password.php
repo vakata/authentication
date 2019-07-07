@@ -143,21 +143,30 @@ class Password implements AuthenticationInterface
         $iv = openssl_random_pseudo_bytes(12);
         $tag = openssl_random_pseudo_bytes(16);
         $cipher = openssl_encrypt($hash, 'aes-256-gcm', $this->key, 0, $iv, $tag);
+        if ($cipher === false) {
+            throw new PasswordException('Could not encrypt');
+        }
         return base64_encode($iv) . "\n" . base64_encode($tag) . "\n" . $cipher;
     }
     public function verify($password, $hash)
     {
+        if (!strlen($hash)) {
+            return false;
+        }
         $parts = explode("\n", $hash);
         if ($this->key) {
             if (count($parts) !== 3 ||
                 strlen(base64_decode($parts[0])) !== 12 ||
                 strlen(base64_decode($parts[1])) !== 16
             ) {
-                throw new PasswordException('Invalid hash');
+                return false;
             }
             $iv = base64_decode($parts[0]);
             $tag = base64_decode($parts[1]);
             $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
+            if ($hash === false) {
+                return false;
+            }
         }
         return password_verify(hash('sha512', $password), $hash);
     }
@@ -169,11 +178,14 @@ class Password implements AuthenticationInterface
                 strlen(base64_decode($parts[0])) !== 12 ||
                 strlen(base64_decode($parts[1])) !== 16
             ) {
-                throw new PasswordException('Invalid hash');
+                return false;
             }
             $iv = base64_decode($parts[0]);
             $tag = base64_decode($parts[1]);
             $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
+            if ($hash === false) {
+                return false;
+            }
         }
         return password_needs_rehash($hash, PASSWORD_DEFAULT);
     }
