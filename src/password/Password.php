@@ -148,30 +148,32 @@ class Password implements AuthenticationInterface
     public function verify($password, $hash)
     {
         $parts = explode("\n", $hash);
-        if ($this->key &&
-            count($parts) == 3 &&
-            strlen(base64_decode($parts[0])) === 12 &&
-            strlen(base64_decode($parts[1])) === 16
-        ) {
-            $iv = base64_decode($parts[0]);
-            $tag = base64_decode($parts[1]);
-            $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
-        }
-        return password_verify(hash('sha512', $password), $hash) || password_verify($password, $hash);
-    }
-    public function rehash($hash, $password = null)
-    {
         if ($this->key) {
-            $parts = explode("\n", $hash);
-            if (count($parts) !== 3) {
-                return true;
+            if (count($parts) !== 3 ||
+                strlen(base64_decode($parts[0])) !== 12 ||
+                strlen(base64_decode($parts[1])) !== 16
+            ) {
+                throw new PasswordException('Invalid hash');
             }
             $iv = base64_decode($parts[0]);
             $tag = base64_decode($parts[1]);
             $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
         }
-        if ($password !== null && password_verify($password, $hash)) {
-            return true;
+        return password_verify(hash('sha512', $password), $hash);
+    }
+    public function rehash($hash, $password = null)
+    {
+        if ($this->key) {
+            $parts = explode("\n", $hash);
+            if (count($parts) !== 3 ||
+                strlen(base64_decode($parts[0])) !== 12 ||
+                strlen(base64_decode($parts[1])) !== 16
+            ) {
+                throw new PasswordException('Invalid hash');
+            }
+            $iv = base64_decode($parts[0]);
+            $tag = base64_decode($parts[1]);
+            $hash = openssl_decrypt($parts[2], 'aes-256-gcm', $this->key, 0, $iv, $tag);
         }
         return password_needs_rehash($hash, PASSWORD_DEFAULT);
     }
