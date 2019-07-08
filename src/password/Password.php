@@ -136,7 +136,7 @@ class Password implements AuthenticationInterface
 
     public function hash($password)
     {
-        $hash = password_hash(hash('sha512', $password), PASSWORD_DEFAULT);
+        $hash = password_hash(hash('sha256', $password), PASSWORD_DEFAULT);
         if (!$this->key) {
             return $hash;
         }
@@ -168,7 +168,7 @@ class Password implements AuthenticationInterface
                 return false;
             }
         }
-        return password_verify(hash('sha512', $password), $hash);
+        return password_verify(hash('sha256', $password), $hash);
     }
     public function rehash($hash, $password = null)
     {
