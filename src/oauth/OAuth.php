@@ -22,6 +22,7 @@ abstract class OAuth implements AuthenticationInterface
     protected $permissions = '';
     protected $grantType = 'authorization_code';
     protected $authHeader = false;
+    protected $stateRandom = null;
 
     /**
      * Create an instance.
@@ -30,7 +31,7 @@ abstract class OAuth implements AuthenticationInterface
      * @param  string      $callbackUrl the callback URL
      * @param  string|null $permissions optional permissions
      */
-    public function __construct($publicKey, $privateKey, $callbackUrl, $permissions = null)
+    public function __construct($publicKey, $privateKey, $callbackUrl, $permissions = null, $stateRandom = '')
     {
         if (!$this->provider) {
             $this->provider = substr(strrchr(get_class($this), '\\'), 1);
@@ -39,6 +40,7 @@ abstract class OAuth implements AuthenticationInterface
         $this->privateKey = $privateKey;
         $this->callbackUrl = $callbackUrl;
         $this->permissions = $permissions ?? $this->permissions;
+        $this->stateRandom = $stateRandom;
     }
 
     protected function state()
@@ -47,7 +49,7 @@ abstract class OAuth implements AuthenticationInterface
             implode(
                 '/',
                 [
-                    session_id(),
+                    $this->stateRandom,
                     $this->publicKey,
                     $this->callbackUrl,
                     (isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : ''),
@@ -123,12 +125,16 @@ abstract class OAuth implements AuthenticationInterface
             } else {
                 $user = @file_get_contents($this->infoUrl . 'access_token=' . rawurlencode($authToken));
             }
-            if (!$user || !($user = @json_decode($user, true)) || isset($user['error']) || !isset($user['id'])) {
+            if (!$user || !($user = @json_decode($user, true)) || isset($user['error'])) {
+                throw new OAuthExceptionData();
+            }
+            $userID = $this->extractUserID($user);
+            if (!isset($userID)) {
                 throw new OAuthExceptionData();
             }
             return new Credentials(
                 substr(strrchr(get_class($this), '\\'), 1),
-                $user['id'],
+                $userID,
                 $this->extractUserData($user)
             );
         }
@@ -143,6 +149,10 @@ abstract class OAuth implements AuthenticationInterface
     public function getCallbackURL()
     {
         return $this->callbackUrl;
+    }
+    protected function extractUserID(array $data)
+    {
+        return $data['id'] ?? null;
     }
     protected function extractUserData(array $data) : array
     {
