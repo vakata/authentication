@@ -31,7 +31,8 @@ class Password implements AuthenticationInterface
             'doNotContainUser' => true,
             'minStrength' => 2,
             'doNotUseBad' => 2500,
-            'doNotUseSame' => true
+            'doNotUseSame' => true,
+            'allowPlainText' => false
         ], $rules);
         $this->key = $key;
     }
@@ -134,6 +135,13 @@ class Password implements AuthenticationInterface
         return (isset($data['username']) && isset($data['password']) && !empty($data['username']) && !empty($data['password']));
     }
 
+    protected function isPlainText($hash): bool
+    {
+        return $this->rules['allowPlainText'] &&
+            strpos($hash, "\n") === false &&
+            substr($hash, 0, 4) !== '$2y$' &&
+            strlen($hash) < 32;
+    }
     public function hash($password)
     {
         $hash = password_hash(hash('sha256', $password), PASSWORD_DEFAULT);
@@ -152,6 +160,9 @@ class Password implements AuthenticationInterface
     {
         if (!strlen($hash)) {
             return false;
+        }
+        if ($this->isPlainText($hash)) {
+            return $password === $hash;
         }
         $parts = explode("\n", $hash);
         if ($this->key) {
@@ -172,6 +183,9 @@ class Password implements AuthenticationInterface
     }
     public function rehash($hash, $password = null)
     {
+        if ($this->isPlainText($hash)) {
+            return true;
+        }
         if ($this->key) {
             $parts = explode("\n", $hash);
             if (count($parts) !== 3 ||
@@ -187,7 +201,7 @@ class Password implements AuthenticationInterface
                 return false;
             }
         }
-        return password_needs_rehash($hash, PASSWORD_DEFAULT);
+        return $this->isPlainText($hash) || password_needs_rehash($hash, PASSWORD_DEFAULT);
     }
 
     /**
