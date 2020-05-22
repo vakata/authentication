@@ -37,7 +37,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         if (!$this->rules['changeEvery']) {
             $this->rules['changeEvery'] = '30 days';
         }
-        if (!$this->rules['changeFirst']) {
+        if (!isset($this->rules['changeFirst'])) {
             $this->rules['changeFirst'] = true;
         }
         $this->db = $db;
