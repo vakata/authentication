@@ -7,6 +7,7 @@ namespace vakata\authentication;
 class Manager implements AuthenticationInterface
 {
     protected $providers = [];
+    protected $callbacks = [];
 
     public function __construct(array $providers = [])
     {
@@ -15,6 +16,10 @@ class Manager implements AuthenticationInterface
                 $this->providers[] = $provider;
             }
         }
+    }
+    public function addCallback(callable $func)
+    {
+        $this->callbacks[] = $func;
     }
     public function addProvider(AuthenticationInterface $provider)
     {
@@ -58,7 +63,14 @@ class Manager implements AuthenticationInterface
         $exceptions = [];
         foreach ($supported as $method) {
             try {
-                return $method->authenticate($data);
+                $credentials = $method->authenticate($data);
+                foreach ($this->callbacks as $callback) {
+                    $temp = call_user_func($callback, $credentials);
+                    if ($temp) {
+                        $credentials = $temp;
+                    }
+                }
+                return $credentials;
             } catch (AuthenticationException $e) {
                 $exceptions[] = $e;
             }
