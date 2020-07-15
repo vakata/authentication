@@ -17,9 +17,9 @@ class AzureAD extends OAuth
     }
     protected function extractUserData(array $data) : array
     {
-        return [
+        return array_merge($data, [
             'name' => $data['displayName'] ?? null,
             'mail' => $data['mail'] ?? $data['userPrincipalName'] ?? null
-        ];
+        ]);
     }
 }

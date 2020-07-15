@@ -24,10 +24,21 @@ class Credentials
     }
     public function toArray() : array
     {
-        return array_merge($this->data, [ 'id' => $this->id, 'provider' => $this->provider ]);
+        $data = [ 'id' => $this->id, 'provider' => $this->provider ];
+        if (isset($this->data['name'])) {
+            $data['name'] = $this->data['name'];
+        }
+        if (isset($this->data['mail'])) {
+            $data['mail'] = $this->data['mail'];
+        }
+        return $data;
+    }
+    public function getData() {
+        return $this->data;
     }
     public function get(string $key, $default = null)
     {
-        return $this->toArray()[$key] ?? $default;
+        $data = array_merge($this->data, [ 'id' => $this->id, 'provider' => $this->provider ]);
+        return $data[$key] ?? $default;
     }
 }

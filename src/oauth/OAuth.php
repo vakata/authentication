@@ -156,9 +156,6 @@ abstract class OAuth implements AuthenticationInterface
     }
     protected function extractUserData(array $data) : array
     {
-        return [
-            'name' => $data['name'] ?? null,
-            'mail' => $data['mail'] ?? null
-        ];
+        return $data;
     }
 }

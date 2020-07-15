@@ -12,13 +12,13 @@ class StampIT extends OAuth
 
     protected function extractUserData(array $data) : array
     {
-        return [
+        return array_merge($data, [
             'name'          => $data['name'] ?? null,
             'mail'          => $data['mail'] ?? null,
             'egn'           => $data['egn'] ?? null,
             'bulstat'       => $data['bulstat'] ?? null,
             'organization'  => $data['organization'] ?? null
-        ];
+        ]);
     }
     protected function extractUserID(array $data)
     {
