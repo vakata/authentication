@@ -30,6 +30,11 @@ class Password implements AuthenticationInterface
             'doNotMatchUser' => true,
             'doNotContainUser' => true,
             'minStrength' => 2,
+            'minCharacterClasses' => 0,
+            'useUpperCase' => false,
+            'useLowerCase' => false,
+            'useDigit' => false,
+            'useSpecial' => false,
             'doNotUseBad' => 2500,
             'doNotUseSame' => true,
             'allowPlainText' => false
@@ -74,6 +79,11 @@ class Password implements AuthenticationInterface
         $strength += preg_match_all('([^a-zA-Z0-9]+)', $password);
         return $strength;
     }
+    public static function countCharacterClasses($password)
+    {
+        return preg_match('([\p{Lu}\p{Lt}])u', $password) + preg_match('([\d])u', $password) +
+            preg_match('([\p{Ll}])u', $password) + preg_match('([^\p{Ll}\p{Lu}\p{Lt}])u', $password);
+    }
     public static function checkPassword(string $username, string $password, array $rules = [])
     {
         $rules = array_merge([
@@ -81,6 +91,12 @@ class Password implements AuthenticationInterface
             'doNotMatchUser' => false,
             'doNotContainUser' => false,
             'minStrength' => 0,
+            'minCharacterClasses' => 0,
+            'useUpperCase' => false,
+            'useLowerCase' => false,
+            'useDigit' => false,
+            'useSpecial' => false,
+            'minCharacterClasses' => 0,
             'doNotUseBad' => 0
         ], $rules);
         if (!strlen($password)) {
@@ -90,6 +106,21 @@ class Password implements AuthenticationInterface
             throw new PasswordExceptionShortPassword('Password too short');
         }
         if ($rules['minStrength'] && static::calculateStrength($password) < $rules['minStrength']) {
+            throw new PasswordExceptionEasyPassword();
+        }
+        if ($rules['minCharacterClasses'] && static::countCharacterClasses($password) < $rules['minCharacterClasses']) {
+            throw new PasswordExceptionEasyPassword();
+        }
+        if ($rules['useUpperCase'] && !preg_match('([\p{Lu}\p{Lt}])u', $password)) {
+            throw new PasswordExceptionEasyPassword();
+        }
+        if ($rules['useLowerCase'] && !preg_match('([\p{Ll}])u', $password)) {
+            throw new PasswordExceptionEasyPassword();
+        }
+        if ($rules['useDigit'] && !preg_match('([\d])u', $password)) {
+            throw new PasswordExceptionEasyPassword();
+        }
+        if ($rules['useSpecial'] && !preg_match('([^\p{Ll}\p{Lu}\p{Lt}])u', $password)) {
             throw new PasswordExceptionEasyPassword();
         }
         if ($rules['doNotMatchUser'] && $password === $username) {
