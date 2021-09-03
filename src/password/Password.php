@@ -97,7 +97,9 @@ class Password implements AuthenticationInterface
             'useDigit' => false,
             'useSpecial' => false,
             'minCharacterClasses' => 0,
-            'doNotUseBad' => 0
+            'doNotUseBad' => 0,
+            'algo' => PASSWORD_DEFAULT,
+            'opts' => [],
         ], $rules);
         if (!strlen($password)) {
             throw new PasswordExceptionShortPassword();
@@ -175,7 +177,7 @@ class Password implements AuthenticationInterface
     }
     public function hash($password)
     {
-        $hash = password_hash(hash('sha256', $password), PASSWORD_DEFAULT);
+        $hash = password_hash(hash('sha256', $password), $this->rules['algo'], $this->rules['opts']);
         if (!$this->key) {
             return $hash;
         }
@@ -232,7 +234,7 @@ class Password implements AuthenticationInterface
                 return false;
             }
         }
-        return $this->isPlainText($hash) || password_needs_rehash($hash, PASSWORD_DEFAULT);
+        return $this->isPlainText($hash) || password_needs_rehash($hash, $this->rules['algo'], $this->rules['opts']);
     }
 
     /**
