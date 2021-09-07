@@ -14,6 +14,22 @@ class Password implements AuthenticationInterface
     protected $passwords = [];
     protected $rules = [];
     protected $key = null;
+    protected static $defaults = [
+        'minLength' => 8,
+        'doNotMatchUser' => true,
+        'doNotContainUser' => true,
+        'minStrength' => 2,
+        'minCharacterClasses' => 0,
+        'useUpperCase' => false,
+        'useLowerCase' => false,
+        'useDigit' => false,
+        'useSpecial' => false,
+        'doNotUseBad' => 2500,
+        'doNotUseSame' => true,
+        'allowPlainText' => false,
+        'algo' => PASSWORD_DEFAULT,
+        'opts' => []
+    ];
 
     /**
      * Create an instance.
@@ -25,20 +41,7 @@ class Password implements AuthenticationInterface
         foreach ($passwords as $user => $pass) {
             $this->addPassword($user, $pass);
         }
-        $this->rules = array_merge([
-            'minLength' => 8,
-            'doNotMatchUser' => true,
-            'doNotContainUser' => true,
-            'minStrength' => 2,
-            'minCharacterClasses' => 0,
-            'useUpperCase' => false,
-            'useLowerCase' => false,
-            'useDigit' => false,
-            'useSpecial' => false,
-            'doNotUseBad' => 2500,
-            'doNotUseSame' => true,
-            'allowPlainText' => false
-        ], $rules);
+        $this->rules = array_merge(static::$defaults, $rules);
         $this->key = $key;
     }
     protected function getPasswordByUsername($username)
@@ -86,21 +89,7 @@ class Password implements AuthenticationInterface
     }
     public static function checkPassword(string $username, string $password, array $rules = [])
     {
-        $rules = array_merge([
-            'minLength' => 0,
-            'doNotMatchUser' => false,
-            'doNotContainUser' => false,
-            'minStrength' => 0,
-            'minCharacterClasses' => 0,
-            'useUpperCase' => false,
-            'useLowerCase' => false,
-            'useDigit' => false,
-            'useSpecial' => false,
-            'minCharacterClasses' => 0,
-            'doNotUseBad' => 0,
-            'algo' => PASSWORD_DEFAULT,
-            'opts' => [],
-        ], $rules);
+        $rules = array_merge(static::$defaults, $rules);
         if (!strlen($password)) {
             throw new PasswordExceptionShortPassword();
         }
