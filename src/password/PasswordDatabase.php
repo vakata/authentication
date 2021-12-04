@@ -17,14 +17,6 @@ class PasswordDatabase extends Password implements AuthenticationInterface
     protected $filter;
     protected $changeEvery;
 
-    /**
-     * Create an instance. Requires a table with `username` and `pasword` columns
-     * @param  DBInterface       $db    a database object
-     * @param  string            $table the table to use
-     * @param  array             $rules optional rules for the class that will override the defaults
-     * @param  string            $fields the columns to use (defaults to 'username', 'password', 'created', 'used')
-     * @param  string            $filter additional filter for all queries
-     */
     public function __construct(
         DBInterface $db,
         string $table,
