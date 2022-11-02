@@ -15,7 +15,7 @@
     }],
     "require": {
         "vakata/random": ">=1.1.1",
-        "vakata/database": "^3.0.2",
+        "vakata/database": "^4.0",
         "vakata/certificate": "^5.8"
     },
     "require-dev": {
