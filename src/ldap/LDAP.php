@@ -37,7 +37,7 @@ class LDAP implements AuthenticationInterface
     protected function search($ldap, $user)
     {
         try {
-            $escp = ldap_escape($user, null, LDAP_ESCAPE_FILTER);
+            $escp = ldap_escape($user, "", LDAP_ESCAPE_FILTER);
             if (!$escp) {
                 return null;
             }
