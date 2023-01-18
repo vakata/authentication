@@ -274,10 +274,10 @@ class EAuth implements AuthenticationInterface
         return new Credentials(
             substr(strrchr(get_class($this), '\\'), 1),
             $data['personIdentifier'],
-            [
+            array_merge([
                 'mail' => $data['email'] ?? null,
                 'name' => $data['birthName'] ?? $data['latinName'] ?? $data['personIdentifier']
-            ]
+            ], $data)
         );
     }
 }
