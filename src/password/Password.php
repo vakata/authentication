@@ -85,7 +85,7 @@ class Password implements AuthenticationInterface
     public static function countCharacterClasses($password)
     {
         return preg_match('([\p{Lu}\p{Lt}])u', $password) + preg_match('([\d])u', $password) +
-            preg_match('([\p{Ll}])u', $password) + preg_match('([^\p{Ll}\p{Lu}\p{Lt}])u', $password);
+            preg_match('([\p{Ll}])u', $password) + preg_match('([^\p{Ll}\p{Lu}\p{Lt}\d])u', $password);
     }
     public static function checkPassword(string $username, string $password, array $rules = [])
     {
