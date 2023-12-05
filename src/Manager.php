@@ -8,6 +8,7 @@ class Manager implements AuthenticationInterface
 {
     protected $providers = [];
     protected $callbacks = [];
+    protected $disabledProviders = [];
 
     public function __construct(array $providers = [])
     {
@@ -21,14 +22,34 @@ class Manager implements AuthenticationInterface
     {
         $this->callbacks[] = $func;
     }
-    public function addProvider(AuthenticationInterface $provider)
+    public function addProvider(AuthenticationInterface $provider, bool $enabled = true)
     {
-        $this->providers[] = $provider;
+        if ($enabled) {
+            $this->providers[] = $provider;
+        } else {
+            $this->disabledProviders = $provider;
+        }
         return $this;
     }
-    public function getProviders(): array
+    public function enableProvider(AuthenticationInterface $provider): void
     {
-        return $this->providers;
+        if (in_array($provider, $this->disabledProviders)) {
+            unset($this->disabledProviders[array_search($provider, $this->disabledProviders)]);
+            $this->providers[] = $provider;
+        }
+    }
+    public function disableProvider(AuthenticationInterface $provider): void
+    {
+        if (in_array($provider, $this->providers)) {
+            unset($this->providers[array_search($provider, $this->providers)]);
+            $this->disabledProviders[] = $provider;
+        }
+    }
+    public function getProviders(bool $enabledOnly = true): array
+    {
+        return $enabledOnly ?
+            $this->providers :
+            array_merge($this->providers, $this->disabledProviders);
     }
     /**
      * Do any of the providers support this input
