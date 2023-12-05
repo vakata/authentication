@@ -38,10 +38,10 @@ class Password implements AuthenticationInterface
      */
     public function __construct(array $passwords = [], array $rules = [], $key = null)
     {
+        $this->rules = array_merge(static::$defaults, $rules);
         foreach ($passwords as $user => $pass) {
             $this->addPassword($user, $pass);
         }
-        $this->rules = array_merge(static::$defaults, $rules);
         $this->key = $key;
     }
     protected function getPasswordByUsername($username)
