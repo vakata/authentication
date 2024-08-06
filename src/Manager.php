@@ -33,15 +33,15 @@ class Manager implements AuthenticationInterface
     }
     public function enableProvider(AuthenticationInterface $provider): void
     {
-        if (in_array($provider, $this->disabledProviders)) {
-            unset($this->disabledProviders[array_search($provider, $this->disabledProviders)]);
+        if (in_array($provider, $this->disabledProviders, true)) {
+            unset($this->disabledProviders[array_search($provider, $this->disabledProviders, true)]);
             $this->providers[] = $provider;
         }
     }
     public function disableProvider(AuthenticationInterface $provider): void
     {
-        if (in_array($provider, $this->providers)) {
-            unset($this->providers[array_search($provider, $this->providers)]);
+        if (in_array($provider, $this->providers, true)) {
+            unset($this->providers[array_search($provider, $this->providers, true)]);
             $this->disabledProviders[] = $provider;
         }
     }

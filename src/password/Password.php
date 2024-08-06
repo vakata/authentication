@@ -120,7 +120,7 @@ class Password implements AuthenticationInterface
         if ($rules['doNotContainUser'] && strpos($password, $username) !== false) {
             throw new PasswordExceptionContainsUsername();
         }
-        if ($rules['doNotUseBad'] && in_array($password, array_slice(static::$bad, 0, $rules['doNotUseBad']))) {
+        if ($rules['doNotUseBad'] && in_array($password, array_slice(static::$bad, 0, $rules['doNotUseBad']), true)) {
             throw new PasswordExceptionTooCommon();
         }
     }

@@ -24,7 +24,7 @@ class Token implements AuthenticationInterface
     }
 
     public function getToken(string $token) {
-        if (($index = array_search($token, $this->tokens)) === false) {
+        if (($index = array_search($token, $this->tokens, true)) === false) {
             throw new TokenExceptionNotFound();
         }
         return $token;
@@ -40,9 +40,9 @@ class Token implements AuthenticationInterface
         if ($token === null) {
             do {
                 $token = Generator::string(64);
-            } while (in_array($token, $this->tokens));
+            } while (in_array($token, $this->tokens, true));
         }
-        if (in_array($token, $this->tokens)) {
+        if (in_array($token, $this->tokens, true)) {
             throw new TokenExceptionAlreadyExists('Token already exists');
         }
         if ($name) {
@@ -54,7 +54,7 @@ class Token implements AuthenticationInterface
     }
     public function deleteToken(string $token)
     {
-        if (($index = array_search($token, $this->tokens)) === false) {
+        if (($index = array_search($token, $this->tokens, true)) === false) {
             throw new TokenExceptionNotFound();
         }
         unset($this->tokens[$index]);

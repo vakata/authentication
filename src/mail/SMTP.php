@@ -76,7 +76,7 @@ class SMTP implements AuthenticationInterface
         $auth = 'LOGIN';
         if (isset($smtp['AUTH']) && is_array($smtp['AUTH'])) {
             foreach (['LOGIN', 'CRAM-MD5', 'PLAIN'] as $a) {
-                if (in_array($a, $smtp['AUTH'])) {
+                if (in_array($a, $smtp['AUTH'], true)) {
                     $auth = $a;
                     break;
                 }
@@ -152,7 +152,7 @@ class SMTP implements AuthenticationInterface
         $data = $this->read();
         $code = substr($data, 0, 3);
         $data = substr($data, 4);
-        if (count($expect) && !in_array($code, $expect)) {
+        if (count($expect) && !in_array($code, $expect, true)) {
             throw new AuthenticationException('SMTP Error : '.$code . ' ' . $data);
         }
 

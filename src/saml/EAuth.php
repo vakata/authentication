@@ -83,7 +83,8 @@ class EAuth implements AuthenticationInterface
                         'placeOfBirth',
                         'canonicalResidenceAddress',
                         'X509Certificate'
-                    ]
+                    ],
+                    true
                 )
             ) {
                 $attr .= '<egovbga:RequestedAttribute FriendlyName="' . $a . '"
