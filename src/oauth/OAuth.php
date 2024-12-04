@@ -60,7 +60,7 @@ abstract class OAuth implements AuthenticationInterface
     }
     /**
      * Does the auth class support this input.
-     * 
+     *
      * Calling `authenticate` if `support` returns `false` will redirect the user to the provider's login screen.
      * @param  array    $data the auth input (empty in all OAuth classes)
      * @return boolean        is the current URL the same as the callbackUrl
