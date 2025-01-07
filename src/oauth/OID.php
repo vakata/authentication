@@ -15,6 +15,7 @@ abstract class OID extends OAuth implements AuthenticationInterface
     protected $tokenUrl = '';
     protected $infoUrl = '';
     protected $permissions = 'openid profile email';
+    protected $responseMode = null;
 
     public function authenticate(array $data = []): Credentials
     {
@@ -25,16 +26,19 @@ abstract class OID extends OAuth implements AuthenticationInterface
         $this->jwksUrl = $data['jwks_uri'];
         $this->authorizeUrl = $data['authorization_endpoint'];
         $this->authorizeUrl .= (strpos($this->authorizeUrl, '?') ? '&' : '?') . 'response_type=code&';
+        if (isset($this->responseMode)) {
+            $this->authorizeUrl .= 'response_mode=' . $this->responseMode . '&';
+        }
         $this->tokenUrl     = $data['token_endpoint'];
 
         if (!$this->supports($data)) {
             throw new AuthenticationExceptionNotSupported('Invalid URL');
         }
-        if (isset($_GET['error'])) {
+        if (isset($_REQUEST['error'])) {
             throw new OAuthExceptionToken();
         }
-        if (isset($_GET['code'])) {
-            if (!isset($_GET['state']) || $_GET['state'] !== $this->state()) {
+        if (isset($_REQUEST['code'])) {
+            if (!isset($_REQUEST['state']) || $_REQUEST['state'] !== $this->state()) {
                 throw new OAuthExceptionState();
             }
             $authToken = @file_get_contents($this->tokenUrl, false, stream_context_create([
@@ -45,7 +49,7 @@ abstract class OID extends OAuth implements AuthenticationInterface
                         'client_id'      => $this->publicKey,
                         'redirect_uri'   => $this->callbackUrl,
                         'client_secret'  => $this->privateKey,
-                        'code'           => $_GET['code'],
+                        'code'           => $_REQUEST['code'],
                         'grant_type'     => $this->grantType
                     ])
                 ]
