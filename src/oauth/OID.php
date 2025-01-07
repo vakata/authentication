@@ -41,6 +41,17 @@ abstract class OID extends OAuth implements AuthenticationInterface
             if (!isset($_REQUEST['state']) || $_REQUEST['state'] !== $this->state()) {
                 throw new OAuthExceptionState();
             }
+            $defaults = [];
+            if (isset($_POST['user'])) {
+                $defaults = json_decode($_POST['user'], true) ?? [];
+                if (isset($defaults['name']) &&
+                    is_array($defaults['name']) &&
+                    isset($defaults['name']['firstName']) &&
+                    isset($defaults['name']['lastName'])
+                ) {
+                    $defaults['name'] = $defaults['name']['firstName'] . ' ' . $defaults['name']['lastName'];
+                }
+            }
             $authToken = @file_get_contents($this->tokenUrl, false, stream_context_create([
                 'http' => [
                     'method'  => 'POST',
@@ -126,7 +137,7 @@ abstract class OID extends OAuth implements AuthenticationInterface
             if (!$idToken->verifySignature($RSAPublicKey)) {
                 throw new AuthenticationException('Invalid signature');
             }
-            $user = $idToken->getClaims();
+            $user = array_merge($defaults, $idToken->getClaims());
             $userID = $user['sub'];
             if (!isset($userID)) {
                 throw new OAuthExceptionData();

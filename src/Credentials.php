@@ -28,6 +28,9 @@ class Credentials
         if (isset($this->data['name'])) {
             $data['name'] = $this->data['name'];
         }
+        if (isset($this->data['email'])) {
+            $data['mail'] = $this->data['email'];
+        }
         if (isset($this->data['mail'])) {
             $data['mail'] = $this->data['mail'];
         }
