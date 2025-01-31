@@ -178,7 +178,7 @@ class EAuth implements AuthenticationInterface
         $xml = new \DOMDocument();
         $xml->preserveWhiteSpace = true;
         $xml->formatOutput = false;
-        $xml->loadXML($data ?: throw new RuntimeException());
+        $xml->loadXML($data ?: throw new \RuntimeException());
         if (!$xml->documentElement) {
             throw new \Exception('Invalid XML');
         }

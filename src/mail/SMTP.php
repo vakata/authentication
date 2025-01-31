@@ -12,6 +12,7 @@ use vakata\authentication\Credentials;
 class SMTP implements AuthenticationInterface
 {
     protected $config;
+    protected $connection;
 
     /**
      * Create an instance

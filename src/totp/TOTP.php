@@ -26,7 +26,7 @@ class TOTP implements AuthenticationInterface
      * @param  string      $secret  the secret key
      * @param  array       $options configuration
      */
-    public function __construct(string $secret = null, array $options = [])
+    public function __construct(?string $secret = null, array $options = [])
     {
         $this->secret = $secret === null ? static::generateSecret() : $secret;
         if (!preg_match('(^[ABCDEFGHIJKLMNOPQRSTUVWXYZ234567]{16}$)i', $this->secret)) {

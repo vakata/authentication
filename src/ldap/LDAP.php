@@ -25,7 +25,7 @@ class LDAP implements AuthenticationInterface
      * @param  string      $pass         optional password to use for searches
      * @param  array       $attr         optional additional fields to include in credentials (name, mail, userPrincipalName and distinguishedName are included)
      */
-    public function __construct(string $host, string $base = null, string $user = null, string $pass = null, array $attr = [])
+    public function __construct(string $host, ?string $base = null, ?string $user = null, ?string $pass = null, array $attr = [])
     {
         $this->host = $host;
         $this->base = $base ? $base : 'DC=' . implode(',DC=', explode('.', $this->host));

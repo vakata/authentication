@@ -39,7 +39,7 @@ class TokenDatabase extends Token implements AuthenticationInterface
         }
         return $token;
     }
-    public function addToken(string $token = null, string $name = null)
+    public function addToken(?string $token = null, ?string $name = null)
     {
         if ($token === null) {
             do {
@@ -82,7 +82,10 @@ class TokenDatabase extends Token implements AuthenticationInterface
             throw new AuthenticationExceptionNotSupported('Missing credentials');
         }
         $rslt = $this->getToken($data['token']);
-        $this->db->query("UPDATE {$this->table} SET used = ? WHERE token = ?", [ date('Y-m-d H:i:s'), $token ]);
+        $this->db->query(
+            "UPDATE {$this->table} SET used = ? WHERE token = ?",
+            [ date('Y-m-d H:i:s'), $data['token'] ]
+        );
         return new Credentials(
             substr(strrchr(get_class($this), '\\'), 1),
             $rslt['token'],

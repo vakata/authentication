@@ -23,7 +23,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         array $rules = [],
         array $fields = [],
         array $filter = [],
-        string $key = null
+        ?string $key = null
     ) {
         parent::__construct([], $rules, $key);
         if (!$this->rules['changeEvery']) {
@@ -100,7 +100,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
         if (!$isRehash) {
             static::checkPassword($username, $password, $this->rules);
         }
-        
+
         $pass = $this->getPasswordByUsername($username);
         if (!$pass) {
             throw new PasswordExceptionInvalidUsername();
@@ -131,7 +131,7 @@ class PasswordDatabase extends Password implements AuthenticationInterface
     /**
      * Authenticate using the supplied creadentials.
      * @param  array        $data the auth input (should contain `username` and `password` keys)
-     * @return \vakata\authentication\Credentials    
+     * @return \vakata\authentication\Credentials
      */
     public function authenticate(array $data = []) : Credentials
     {

@@ -35,7 +35,7 @@ class Token implements AuthenticationInterface
         }
         return $this->tokens[$name];
     }
-    public function addToken(string $token = null, string $name = null)
+    public function addToken(?string $token = null, ?string $name = null)
     {
         if ($token === null) {
             do {
